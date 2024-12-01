@@ -44,7 +44,7 @@ public class AdminControllerCreateImpl implements AdminControllerCreate {
     @Override
     @GetMapping("/client")
     public String createClient(Model model) {
-        var base = createBaseViewModel("Client create page", null, null);
+        var base = createBaseViewModel("Client create page", 1, null, null);
         model.addAttribute("model", base);
         model.addAttribute("entity", "client");
         return "admin-create";
@@ -53,7 +53,7 @@ public class AdminControllerCreateImpl implements AdminControllerCreate {
     @Override
     @GetMapping("/genre")
     public String createGenre(Model model) {
-        var base = createBaseViewModel("Client create page", null, null);
+        var base = createBaseViewModel("Client create page", 1, null, null);
         model.addAttribute("model", base);
         model.addAttribute("entity", "genre");
         return "admin-create";
@@ -62,7 +62,7 @@ public class AdminControllerCreateImpl implements AdminControllerCreate {
     @Override
     @GetMapping("/media")
     public String createMedia(Model model) {
-        var base = createBaseViewModel("Client create page", null, null);
+        var base = createBaseViewModel("Client create page", 1, null, null);
         model.addAttribute("model", base);
         model.addAttribute("entity", "media");
         return "admin-create";
@@ -72,7 +72,7 @@ public class AdminControllerCreateImpl implements AdminControllerCreate {
     @PostMapping("/client")
     public String createClient(@Valid @ModelAttribute("clientForm") ClientFormModel clientFormModel,
                                BindingResult bindingResult, Model model, RedirectAttributes redirectAttributes) {
-        var base = createBaseViewModel("Client create page", null, null);
+        var base = createBaseViewModel("Client create page", 1, null, null);
 
         model.addAttribute("model", base);
         if (bindingResult.hasErrors()){
@@ -95,7 +95,7 @@ public class AdminControllerCreateImpl implements AdminControllerCreate {
     @Override
     @PostMapping("/genre")
     public String createGenre(GenreFormModel genreFormModel, BindingResult bindingResult, Model model, RedirectAttributes redirectAttributes) {
-        var base = createBaseViewModel("Genre create page", null, null);
+        var base = createBaseViewModel("Genre create page", 1, null, null);
 
         model.addAttribute("model", base);
         if (bindingResult.hasErrors()){
@@ -118,7 +118,7 @@ public class AdminControllerCreateImpl implements AdminControllerCreate {
     @Override
     @PostMapping("/media")
     public String createMedia(MediaFormModel mediaFormModel, BindingResult bindingResult, Model model, RedirectAttributes redirectAttributes) {
-        var base = createBaseViewModel("Media create page", null, null);
+        var base = createBaseViewModel("Media create page", 1, null, null);
 
         model.addAttribute("model", base);
         if (bindingResult.hasErrors()){
@@ -140,7 +140,8 @@ public class AdminControllerCreateImpl implements AdminControllerCreate {
     }
 
     @Override
-    public BaseViewModel createBaseViewModel(String title, String clientName, String clientPhotoUrl) {
-        return new BaseViewModel(title, clientName, clientPhotoUrl);
+    public BaseViewModel createBaseViewModel(String title, int id, String clientName, String clientPhotoUrl) {
+        return new BaseViewModel(title, id, clientName, clientPhotoUrl);
     }
+
 }

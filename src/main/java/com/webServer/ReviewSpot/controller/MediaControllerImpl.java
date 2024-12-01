@@ -49,21 +49,21 @@ public class MediaControllerImpl implements MediaController {
         var reviewPage = reviewFilter.page() != null ? reviewFilter.page() : 1;
         var reviewSize = reviewFilter.size() != null ? reviewFilter.size() : 4;
 
-        var base = createBaseViewModel("Media page", null, null);
+        var base = createBaseViewModel("Media page", 2, null, null);
         var media = mediaService.findById(id);
-        MediaCardViewModel mediaCard = new MediaCardViewModel(media.getName(), media.getPhotoUrl(), media.getDescription(), media.getGenre(), media.getRating());
+        MediaCardViewModel mediaCard = new MediaCardViewModel(media.getId(), media.getName(), media.getPhotoUrl(), media.getDescription(), media.getGenre(), media.getRating());
 
         var comments = commentService.getLastCommentsByMediaId(id, commentPage, commentSize);
-        var reviews = reviewService.getLastReviewsByMediaId(id, reviewPage, reviewSize);
+        var reviews = reviewService.getReviewsByMediaId(id, reviewPage, reviewSize);
 
-        List<CommentCardViewModel> commentsCard = comments.stream().map(comment -> new CommentCardViewModel(comment.getClientName(), comment.getClientPhotoUrl(),
+        List<CommentCardViewModel> commentsCard = comments.stream().map(comment -> new CommentCardViewModel(comment.getId(), comment.getClientName(), comment.getClientPhotoUrl(), comment.getClientId(),
                 comment.getMediaName(), comment.getText(), comment.getDateTime(), comment.getLikeCount(), comment.getDislikeCount(),
                 reactionService.isLike(comment.getClientId(), comment.getId(), "COMMENT"), reactionService.isDislike(comment.getClientId(),
-                comment.getId(), "COMMENT"))).toList();
+                comment.getId(), "COMMENT"), comments.getNumber() + 1, comments.getTotalPages())).toList();
 
-        List<ReviewCardViewModel> reviewsCard = reviews.stream().map(review -> new ReviewCardViewModel(review.getClientName(), review.getClientPhotoUrl(), review.getMediaName(),
+        List<ReviewCardViewModel> reviewsCard = reviews.stream().map(review -> new ReviewCardViewModel(review.getId(), review.getClientName(), review.getClientPhotoUrl(), review.getMediaName(), review.getMediaId(),
                 review.getMediaPhotoUrl(), review.getRating(), review.getWatchStatus().toString(), review.getText(), review.getDateTime(), review.getLikeCount(), review.getDislikeCount(),
-                reactionService.isLike(review.getClientId(), review.getId(), "REVIEW"), reactionService.isDislike(review.getClientId(), review.getId(), "REVIEW"))).toList();
+                reactionService.isLike(review.getClientId(), review.getId(), "REVIEW"), reactionService.isDislike(review.getClientId(), review.getId(), "REVIEW"), reviews.getNumber() +1, reviews.getTotalPages())).toList();
 
         MediaViewModel mediaViewModel = new MediaViewModel(base, mediaCard, reviewsCard, commentsCard);
         model.addAttribute("model", mediaViewModel);
@@ -72,7 +72,7 @@ public class MediaControllerImpl implements MediaController {
     }
 
     @Override
-    public BaseViewModel createBaseViewModel(String title, String clientName, String clientPhotoUrl) {
-        return new BaseViewModel(title, clientName, clientPhotoUrl);
+    public BaseViewModel createBaseViewModel(String title, int id, String clientName, String clientPhotoUrl) {
+        return new BaseViewModel(title, id, clientName, clientPhotoUrl);
     }
 }

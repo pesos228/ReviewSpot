@@ -143,21 +143,21 @@ public class ReviewServiceImpl implements ReviewService {
     public List<ReviewOutputDto> getLastReviewsByClientId(int id, int count) {
         Client client = clientRepository.findById(id);
         if (client == null){
-            throw new ClientNotFoundException("Client with id: " + id + " not found");
+            throw new ClientNotFoundException("Client with id: " + id + " not found3");
         }
         var reviews = reviewRepository.getLastReviewsByClientId(id, count);
         return createReviewOutputDto(reviews);
     }
 
     @Override
-    public Page<ReviewOutputDto> getLastReviewsByMediaId(int id, int reviewPage, int reviewSize) {
+    public Page<ReviewOutputDto> getReviewsByMediaId(int id, int reviewPage, int reviewSize) {
         Pageable pageable = PageRequest.of(reviewPage - 1, reviewSize);
         Media media = mediaRepository.findById(id);
         if (media == null){
             throw new MediaNotFoundException("Media with id: " + id + " not found");
         }
 
-        var reviews = reviewRepository.getLastReviewsByMediaId(id, pageable);
+        var reviews = reviewRepository.getReviewsByMediaId(id, pageable);
         return reviews.map(review -> {
             List<Reaction> reactions = reactionRepository.findByReviewId(review.getId());
             int likeCount = 0;
@@ -165,8 +165,37 @@ public class ReviewServiceImpl implements ReviewService {
             for (Reaction reaction: reactions){
                 if (reaction.getLike()){
                     likeCount++;
+                }else{
+                    dislikeCount++;
                 }
-                dislikeCount++;
+            }
+
+            ReviewInputDto.WatchStatus watchStatus = ReviewInputDto.WatchStatus.valueOf(review.getWatchStatus().toUpperCase());
+            return new ReviewOutputDto(review.getClient().getId(), review.getMedia().getId(), review.getRating(),
+                    watchStatus, review.getText(), review.getClient().getName(), review.getClient().getPhotoUrl(), review.getMedia().getName(), review.getMedia().getPhotoUrl(),
+                    review.getId(), review.getDateTime(), likeCount, dislikeCount);
+        });
+    }
+
+    @Override
+    public Page<ReviewOutputDto> getReviewsByClientId(int id, int reviewPage, int reviewSize) {
+        Pageable pageable = PageRequest.of(reviewPage - 1, reviewSize);
+        Client client = clientRepository.findById(id);
+        if (client == null){
+            throw new ClientNotFoundException("Client with id: " + id + " not found");
+        }
+
+        var reviews = reviewRepository.getReviewsByClientId(id, pageable);
+        return reviews.map(review -> {
+            List<Reaction> reactions = reactionRepository.findByReviewId(review.getId());
+            int likeCount = 0;
+            int dislikeCount = 0;
+            for (Reaction reaction: reactions){
+                if (reaction.getLike()){
+                    likeCount++;
+                }else{
+                    dislikeCount++;
+                }
             }
 
             ReviewInputDto.WatchStatus watchStatus = ReviewInputDto.WatchStatus.valueOf(review.getWatchStatus().toUpperCase());
@@ -186,7 +215,10 @@ public class ReviewServiceImpl implements ReviewService {
                 if (reaction.getLike()){
                     likeCount++;
                 }
-                dislikeCount++;
+                else{
+                    dislikeCount++;
+                }
+
             }
 
             ReviewInputDto.WatchStatus watchStatus = ReviewInputDto.WatchStatus.valueOf(review.getWatchStatus().toUpperCase());

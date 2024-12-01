@@ -32,18 +32,23 @@ public class MainControllerImpl implements MainController {
     @Override
     @GetMapping
     public String mainPage(Model model) {
-        var baseView = createBaseViewModel("Main", null, null);
+        var baseView = createBaseViewModel("Main", 2,"Testik", "https://png.pngtree.com/png-vector/20240123/ourlarge/pngtree-cute-little-orange-cat-cute-kitty-png-image_11459046.png");
         var clientListDto = clientService.getMostActiveClients(5);
+        for (ClientInfoDto client: clientListDto){
+            System.out.println(client.getId());
+            var ww = clientService.findById(client.getId());
+            System.out.println(ww.getName());
+        }
         var mediaListDto = mediaService.getMostPopularMediaByLastWeek(5);
 
         List<ClientCardViewModel> clientTop = new ArrayList<>();
         for (ClientInfoDto client: clientListDto){
-            clientTop.add(new ClientCardViewModel(client.getName(), client.getPhotoUrl(), client.getComments().size(), client.getReviews().size()));
+            clientTop.add(new ClientCardViewModel(client.getId(), client.getName(), client.getPhotoUrl(), client.getComments().size(), client.getReviews().size()));
         }
 
         List<MediaCardViewModel> modelTop = new ArrayList<>();
         for (MediaOutputDto media: mediaListDto){
-            modelTop.add(new MediaCardViewModel(media.getName(), media.getPhotoUrl(),
+            modelTop.add(new MediaCardViewModel(media.getId(),media.getName(), media.getPhotoUrl(),
                     media.getDescription(), media.getGenre(), media.getRating()));
         }
 
@@ -53,7 +58,7 @@ public class MainControllerImpl implements MainController {
     }
 
     @Override
-    public BaseViewModel createBaseViewModel(String title, String clientName, String clientPhotoUrl) {
-        return new BaseViewModel(title, clientName, clientPhotoUrl);
+    public BaseViewModel createBaseViewModel(String title, int id, String clientName, String clientPhotoUrl) {
+        return new BaseViewModel(title, id, clientName, clientPhotoUrl);
     }
 }

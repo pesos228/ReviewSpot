@@ -40,7 +40,7 @@ public class AdminControllerEditImpl implements AdminControllerEdit {
     @Override
     @GetMapping("/{id}/client")
     public String editClient(@PathVariable int id, Model model, RedirectAttributes redirectAttributes) {
-        var base = createBaseViewModel("Client edit page", null, null);
+        var base = createBaseViewModel("Client edit page", 1, null, null);
         ClientInfoDto client;
         try {
             client = clientService.findById(id);
@@ -58,7 +58,7 @@ public class AdminControllerEditImpl implements AdminControllerEdit {
     @Override
     @GetMapping("/{id}/genre")
     public String editGenre(@PathVariable int id, Model model, RedirectAttributes redirectAttributes) {
-        var base = createBaseViewModel("Genre edit page", null, null);
+        var base = createBaseViewModel("Genre edit page", 1, null, null);
         GenreOutputDto genre;
         try {
             genre = genreService.findById(id);
@@ -75,7 +75,7 @@ public class AdminControllerEditImpl implements AdminControllerEdit {
     @Override
     @GetMapping("/{id}/media")
     public String editMedia(@PathVariable int id, Model model, RedirectAttributes redirectAttributes) {
-        var base = createBaseViewModel("Media edit page", null, null);
+        var base = createBaseViewModel("Media edit page", 1, null, null);
         MediaOutputDto media;
         try {
             media = mediaService.findById(id);
@@ -180,7 +180,7 @@ public class AdminControllerEditImpl implements AdminControllerEdit {
     }
 
     @Override
-    public BaseViewModel createBaseViewModel(String title, String clientName, String clientPhotoUrl) {
-        return new BaseViewModel(title, clientName, clientPhotoUrl);
+    public BaseViewModel createBaseViewModel(String title, int id, String clientName, String clientPhotoUrl) {
+        return new BaseViewModel(title, id, clientName, clientPhotoUrl);
     }
 }

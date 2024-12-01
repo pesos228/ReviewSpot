@@ -16,5 +16,6 @@ public interface ReviewService {
     List<ReviewOutputDto> findByClientIdAfterDate(int id, LocalDateTime date);
     List<ReviewOutputDto> findByMediaIdAfterDate(int id, LocalDateTime date);
     List<ReviewOutputDto> getLastReviewsByClientId(int id, int count);
-    Page<ReviewOutputDto>  getLastReviewsByMediaId(int id, int reviewPage, int reviewSize);
+    Page<ReviewOutputDto> getReviewsByMediaId(int id, int reviewPage, int reviewSize);
+    Page<ReviewOutputDto> getReviewsByClientId(int id, int reviewPage, int reviewSize);
 }

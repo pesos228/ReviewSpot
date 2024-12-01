@@ -115,11 +115,40 @@ public class CommentServiceImpl implements CommentService {
     }
 
     @Override
+    public Page<CommentOutputDto> getLastCommentsByClientId(int id, int page, int size) {
+        Pageable pageable = PageRequest.of(page - 1, size);
+        Client client = clientRepository.findById(id);
+        if (client == null){
+            throw new ClientNotFoundException("Client with id: " + id + " not found");
+        }
+
+        var comments = commentRepository.getLastCommentsByClientId(id, pageable);
+
+        return comments.map(comment -> {
+            List<Reaction> reactions = reactionRepository.findByCommentId(comment.getId());
+            int likeCount = 0;
+            int dislikeCount = 0;
+            for (Reaction reaction: reactions){
+                if (reaction.getLike()){
+                    likeCount++;
+                }
+                else{
+                    dislikeCount++;
+                }
+
+            }
+
+            return new CommentOutputDto(comment.getClient().getId(), comment.getMedia().getId(), comment.getText(), comment.getId(),
+                    comment.getClient().getName(), comment.getClient().getPhotoUrl(), comment.getMedia().getName(), comment.getDateTime(), likeCount, dislikeCount);
+        });
+    }
+
+    @Override
     public Page<CommentOutputDto> getLastCommentsByMediaId(int id, int page, int size) {
         Pageable pageable = PageRequest.of(page - 1, size);
         Media media = mediaRepository.findById(id);
         if (media == null){
-            throw new ClientNotFoundException("Client with id: " + id + " not found");
+            throw new ClientNotFoundException("Client with id: " + id + " not found1");
         }
 
         var comments = commentRepository.getLastCommentsByMediaId(id, pageable);
@@ -131,8 +160,10 @@ public class CommentServiceImpl implements CommentService {
             for (Reaction reaction: reactions){
                 if (reaction.getLike()){
                     likeCount++;
+                }else{
+                    dislikeCount++;
                 }
-                dislikeCount++;
+
             }
 
             return new CommentOutputDto(comment.getClient().getId(), comment.getMedia().getId(), comment.getText(), comment.getId(),
@@ -161,7 +192,9 @@ public class CommentServiceImpl implements CommentService {
                 if (reaction.getLike()){
                     likeCount++;
                 }
-                dislikeCount++;
+                if (!reaction.getLike()){
+                    dislikeCount++;
+                }
             }
 
             CommentOutputDto commentOutputDto = new CommentOutputDto(comment.getClient().getId(), comment.getMedia().getId(), comment.getText(), comment.getId(),

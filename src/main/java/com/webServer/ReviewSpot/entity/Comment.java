@@ -52,7 +52,7 @@ public class Comment extends BaseEntity {
         this.dateTime = dateTime;
     }
 
-    @Column(name = "text", nullable = false)
+    @Column(name = "text", nullable = false, columnDefinition = "TEXT")
     public String getText() {
         return text;
     }

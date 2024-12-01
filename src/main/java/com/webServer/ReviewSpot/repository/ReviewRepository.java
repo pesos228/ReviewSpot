@@ -16,5 +16,6 @@ public interface ReviewRepository {
     List<Review> getLastReviewsByClientId(int id, int count);
     void deleteById(int id);
     Review findById(int id);
-    Page<Review> getLastReviewsByMediaId(int id, Pageable pageable);
+    Page<Review> getReviewsByMediaId(int id, Pageable pageable);
+    Page<Review> getReviewsByClientId(int id, Pageable pageable);
 }

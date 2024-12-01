@@ -60,9 +60,9 @@ public class ClientServiceImpl implements ClientService {
     public ClientInfoDto findById(int id) {
         Client client = clientRepository.findById(id);
         if (client == null){
-            throw  new ClientNotFoundException("Client with id: " + id + " not found");
+            throw  new ClientNotFoundException("Client with id: " + id + " not found2");
         }
-        return new ClientInfoDto(client.getName(), client.getPhotoUrl(), commentService.findByClientId(id), reviewService.findByClientId(id));
+        return new ClientInfoDto(client.getId(), client.getName(), client.getPhotoUrl(), commentService.findByClientId(id), reviewService.findByClientId(id));
 
     }
 
@@ -82,6 +82,9 @@ public class ClientServiceImpl implements ClientService {
     @Override
     public boolean authenticateClient(String email, String password) {
         Client client = clientRepository.findByEmail(email);
+        if (client == null){
+            throw new ClientNotFoundException("Client with email: " + email + " not found");
+        }
         return client.getEmail().equals(email) && client.getPassword().equals(password);
     }
 
@@ -93,7 +96,7 @@ public class ClientServiceImpl implements ClientService {
                     var comments = commentService.findByClientIdAfterDate(client.getId(), lastWeek);
                     var reviews = reviewService.findByClientIdAfterDate(client.getId(), lastWeek);
 
-                    return new ClientInfoDto(client.getName(), client.getPhotoUrl(), comments, reviews);
+                    return new ClientInfoDto(client.getId(), client.getName(), client.getPhotoUrl(), comments, reviews);
                 }
         ).sorted((c1, c2) -> Integer.compare(
                         c2.getComments().size() + c2.getReviews().size(),
@@ -109,7 +112,7 @@ public class ClientServiceImpl implements ClientService {
         Pageable pageable = PageRequest.of(page - 1, size);
         var clients = clientRepository.findAll(pageable);
 
-        return clients.map(client -> new ClientInfoDto(client.getName(), client.getPhotoUrl(),
+        return clients.map(client -> new ClientInfoDto(client.getId(), client.getName(), client.getPhotoUrl(),
                 commentService.findByClientId(client.getId()),
                 reviewService.findByClientId(client.getId())));
 

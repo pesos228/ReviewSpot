@@ -14,6 +14,7 @@ public interface CommentService {
     List<CommentOutputDto> findByMediaIdAfterDate(int id, LocalDateTime date);
     List<CommentOutputDto> findByMediaId(int id);
     List<CommentOutputDto> getLastCommentsByClientId(int id, int count);
+    Page<CommentOutputDto> getLastCommentsByClientId(int id,  int page, int size);
     Page<CommentOutputDto> getLastCommentsByMediaId(int id, int page, int size);
     void deleteById(int id);
 }

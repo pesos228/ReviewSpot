@@ -6,6 +6,7 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.NoResultException;
 import jakarta.persistence.PersistenceContext;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -39,6 +40,7 @@ public class ReactionRepositoryImpl implements ReactionRepository {
     }
 
     @Override
+    @Transactional
     public void deleteById(int id) {
         var reaction = entityManager.find(Reaction.class, id);
         if (reaction != null){

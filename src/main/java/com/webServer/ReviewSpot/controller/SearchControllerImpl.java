@@ -34,13 +34,13 @@ public class SearchControllerImpl implements SearchController {
         var genres = filter.genres() != null ? filter.genres() : new ArrayList<String>();
         var page = filter.page() != null ? filter.page() : 1;
         var size = filter.size() != null ? filter.size() : 10;
-        var base = createBaseViewModel("Search", null, null);
+        var base = createBaseViewModel("Search", 2, null, null);
 
         filter = new MediaSearchFormModel(searchQuery, genres, page, size);
 
         var mediaPage = mediaService.getMedia(searchQuery, genres, page, size);
         var mediaViewModel = mediaPage.stream()
-                .map(mediaCardDto -> new MediaCardViewModel(mediaCardDto.getName(), mediaCardDto.getMediaPhotoUrl(),
+                .map(mediaCardDto -> new MediaCardViewModel(mediaCardDto.getId(), mediaCardDto.getName(), mediaCardDto.getMediaPhotoUrl(),
                         mediaCardDto.getDescription(), mediaCardDto.getGenres(), mediaCardDto.getRating()))
                 .collect(Collectors.toList());
 
@@ -51,7 +51,7 @@ public class SearchControllerImpl implements SearchController {
     }
 
     @Override
-    public BaseViewModel createBaseViewModel(String title, String clientName, String clientPhotoUrl) {
-        return new BaseViewModel(title, clientName, clientPhotoUrl);
+    public BaseViewModel createBaseViewModel(String title, int id, String clientName, String clientPhotoUrl) {
+        return new BaseViewModel(title, id, clientName, clientPhotoUrl);
     }
 }

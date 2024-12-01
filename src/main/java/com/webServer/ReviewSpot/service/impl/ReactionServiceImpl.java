@@ -92,6 +92,7 @@ public class ReactionServiceImpl implements ReactionService {
     }
 
     @Override
+    @Transactional
     public void deleteByClientTargetAndType(int clientId, int targetId, String targetType) {
         Client client = clientRepository.findById(clientId);
 
@@ -113,7 +114,8 @@ public class ReactionServiceImpl implements ReactionService {
         Client client = clientRepository.findById(clientId);
 
         if (client == null){
-            throw new ClientNotFoundException("Client with id:" + clientId + " not found");
+            System.err.println("Client with id:" + clientId + " not found");
+            return false;
         }
 
         for (Reaction reaction: findReactionList(targetType, targetId)){
@@ -121,19 +123,24 @@ public class ReactionServiceImpl implements ReactionService {
                 return reaction.getLike();
             }
         }
-        throw new ClientReactionNotFoundException("Reaction not found for client with ID: " + client.getId());
+        return false;
     }
 
     @Override
     public boolean isDislike(int clientId, int targetId, String targetType) {
         Client client = clientRepository.findById(clientId);
 
+        if (client == null){
+            System.err.println("Client with id:" + clientId + " not found");
+            return false;
+        }
+
         for (Reaction reaction: findReactionList(targetType, targetId)){
-            if (reaction.getClient().getId() == client.getId()){
+            if (reaction.getClient().getId() == client.getId()) {
                 return !reaction.getLike();
             }
         }
-        throw new ClientReactionNotFoundException("Reaction not found for client with ID: " + client.getId());
+        return false;
     }
 
     private List<Reaction> findReactionList(String targetType, int targetId){
@@ -141,12 +148,18 @@ public class ReactionServiceImpl implements ReactionService {
         if (targetType.equalsIgnoreCase("COMMENT")){
             reactions = reactionRepository.findByCommentId(targetId);
             if (reactions.isEmpty()){
-                throw new CommentNotFoundException("Comment with id: " + targetId + " not found");
+                var comment = commentRepository.findById(targetId);
+                if (comment == null){
+                    throw new CommentNotFoundException("Comment with id: " + targetId + " not found");
+                }
             }
         } else if (targetType.equalsIgnoreCase("REVIEW")) {
             reactions = reactionRepository.findByReviewId(targetId);
             if (reactions.isEmpty()){
-                throw new ReviewNotFoundException("Review with id: " + targetType + " not found");
+                var review = reviewRepository.findById(targetId);
+                if (review == null){
+                    throw new ReviewNotFoundException("Review with id: " + targetId + " not found");
+                }
             }
         }
         else{

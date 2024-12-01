@@ -33,7 +33,7 @@ public class AdminControllerImpl implements AdminController {
     @Override
     @GetMapping
     public String adminPanel(Model model) {
-        var base = createBaseViewModel("Admin panel", null, null);
+        var base = createBaseViewModel("Admin panel", 1, null, null);
         model.addAttribute("model", base);
         return "admin-main";
     }
@@ -43,7 +43,7 @@ public class AdminControllerImpl implements AdminController {
     public String adminPanelClient(@ModelAttribute("filter") ClientPageFormModel filter, Model model) {
         var page = filter.page() != null ? filter.page() : 1;
         var size = filter.size() != null ? filter.size() : 10;
-        var base = createBaseViewModel("Admin panel", null, null);
+        var base = createBaseViewModel("Admin panel", 1, null, null);
         var clients = clientService.findAll(page, size);
 
         model.addAttribute("model", base);
@@ -57,7 +57,7 @@ public class AdminControllerImpl implements AdminController {
     public String adminPanelGenre(@ModelAttribute("filter") GenrePageFormModel filter, Model model) {
         var page = filter.page() != null ? filter.page() : 1;
         var size = filter.size() != null ? filter.size() : 10;
-        var base = createBaseViewModel("Admin panel", null, null);
+        var base = createBaseViewModel("Admin panel", 1, null, null);
         var genres = genreService.findAll(page, size);
 
         model.addAttribute("model", base);
@@ -71,7 +71,7 @@ public class AdminControllerImpl implements AdminController {
     public String adminPanelMedia(@ModelAttribute("filter")MediaPageFormModel filter, Model model) {
         var page = filter.page() != null ? filter.page() : 1;
         var size = filter.size() != null ? filter.size() : 10;
-        var base = createBaseViewModel("Admin panel", null, null);
+        var base = createBaseViewModel("Admin panel", 1, null, null);
         var media = mediaService.findAll(page, size);
 
         model.addAttribute("model", base);
@@ -81,7 +81,7 @@ public class AdminControllerImpl implements AdminController {
     }
 
     @Override
-    public BaseViewModel createBaseViewModel(String title, String clientName, String clientPhotoUrl) {
-        return new BaseViewModel(title, clientName, clientPhotoUrl);
+    public BaseViewModel createBaseViewModel(String title, int id, String clientName, String clientPhotoUrl) {
+        return new BaseViewModel(title, id, clientName, clientPhotoUrl);
     }
 }

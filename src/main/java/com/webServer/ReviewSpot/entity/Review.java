@@ -64,7 +64,7 @@ public class Review extends BaseEntity {
         this.rating = rating;
     }
 
-    @Column(name = "text")
+    @Column(name = "text", columnDefinition = "TEXT")
     public String getText() {
         return text;
     }

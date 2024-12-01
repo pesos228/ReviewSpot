@@ -1,5 +1,6 @@
 package com.webServer.ReviewSpot.repository.impl;
 
+import com.webServer.ReviewSpot.entity.Client;
 import com.webServer.ReviewSpot.entity.Media;
 import com.webServer.ReviewSpot.entity.Review;
 import com.webServer.ReviewSpot.repository.ReviewRepository;
@@ -89,7 +90,7 @@ public class ReviewRepositoryImpl implements ReviewRepository {
     }
 
     @Override
-    public Page<Review> getLastReviewsByMediaId(int id, Pageable pageable) {
+    public Page<Review> getReviewsByMediaId(int id, Pageable pageable) {
         Long reviewCount;
         try {
             reviewCount = entityManager.createQuery("SELECT COUNT(r) FROM Review r JOIN r.media m WHERE m.id = :id ORDER BY r.dateTime DESC", Long.class)
@@ -100,6 +101,26 @@ public class ReviewRepositoryImpl implements ReviewRepository {
         }
 
         var reviews = entityManager.createQuery("SELECT r FROM Review r JOIN r.media m WHERE m.id = :id ORDER BY r.dateTime DESC", Review.class)
+                .setParameter("id", id)
+                .setFirstResult((int) pageable.getOffset())
+                .setMaxResults(pageable.getPageSize())
+                .getResultList();
+
+        return new PageImpl<>(reviews, pageable, reviewCount);
+    }
+
+    @Override
+    public Page<Review> getReviewsByClientId(int id, Pageable pageable) {
+        Long reviewCount;
+        try {
+            reviewCount = entityManager.createQuery("SELECT COUNT(c) FROM Review r JOIN r.client c WHERE c.id = :id", Long.class)
+                    .setParameter("id", id)
+                    .getSingleResult();
+        }catch (NoResultException e){
+            return new PageImpl<>(Collections.emptyList(), pageable, 0);
+        }
+
+        var reviews = entityManager.createQuery("SELECT r FROM Review r JOIN r.client c WHERE c.id = :id", Review.class)
                 .setParameter("id", id)
                 .setFirstResult((int) pageable.getOffset())
                 .setMaxResults(pageable.getPageSize())

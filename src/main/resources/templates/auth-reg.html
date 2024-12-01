@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <link href="/css/bootstrap.min.css" rel="stylesheet">
+    <meta charset="UTF-8">
+    <title th:text="${model.title}"></title>
+</head>
+<body class="text-bg-dark">
+
+<nav class="navbar bg-body-dark">
+    <div class="container-fluid">
+        <a class="navbar-brand fs-2 text-white" href="/">Review spot</a>
+    </div>
+</nav>
+
+<div class="container text-center position-absolute top-50 start-50 translate-middle">
+    <form action="/auth/register" method="post" th:object="${newClient}">
+        <h1>Регистрация</h1>
+
+        <div class="input-group mb-3 w-25 mx-auto">
+            <span class="input-group-text">Имя</span>
+            <input type="text" name="name" class="form-control" required th:field="*{name}">
+        </div>
+        <div class="input-group mb-3 w-25 mx-auto">
+            <span class="input-group-text">Логин</span>
+            <input type="email" class="form-control" name="email" required th:field="*{email}">
+        </div>
+        <div class="input-group mb-3 w-25 mx-auto">
+            <span class="input-group-text">Пароль</span>
+            <input type="password" name="password" class="form-control" required th:field="*{password}">
+        </div>
+        <div class="input-group mb-3 w-25 mx-auto">
+            <span class="input-group-text">Url фото</span>
+            <input type="text" name="password" class="form-control" required th:field="*{photoUrl}">
+        </div>
+        <button type="submit" class="btn btn-primary mb-3 w-25">Зарегистрироваться</button>
+        <div th:if="${error}" class="alert alert-danger w-25 mx-auto">
+            <p th:text="${error}"></p>
+        </div>
+        <div>
+            <a href="/auth/login">Авторизоваться</a>
+        </div>
+    </form>
+</div>
+
+</body>
+</html>

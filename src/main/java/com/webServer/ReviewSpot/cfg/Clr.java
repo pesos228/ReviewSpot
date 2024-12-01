@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-@Component
+//@Component
 @Transactional
 public class Clr implements CommandLineRunner {
 
@@ -43,9 +43,9 @@ public class Clr implements CommandLineRunner {
         // Создаем медиа
         Media movie = new Media(
                 "The Matrix",
-                "matrix.jpg",
+                "https://m.media-amazon.com/images/M/MV5BNjAxYjkxNjktYTU0YS00NjFhLWIyMDEtMzEzMTJjMzRkMzQ1XkEyXkFqcGc@._V1_FMjpg_UX1000_.jpg",
                 "A computer programmer discovers a fantastic world...",
-                4.5f,
+                5,
                 new ArrayList<>(),
                 new ArrayList<>(),
                 Arrays.asList(action, drama)
@@ -57,7 +57,7 @@ public class Clr implements CommandLineRunner {
                 "John Doe",
                 "john@example.com",
                 "password123",
-                "vladick.fun",
+                "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTP4xlp7Az9BofS3TO91z_EaeLvHusgeBqt_A&s",
                 new ArrayList<>(),
                 new ArrayList<>(),
                 new ArrayList<>()
@@ -69,9 +69,19 @@ public class Clr implements CommandLineRunner {
                 client,
                 movie,
                 LocalDateTime.now(),
-                "Great movie!"
+                "Great movie!Great movie!Great movie!Great movie!Great movie!Great movie!Great movie!Great movie!Great movie!Great movie!Great movie!Great movie!Great movie!Great movie!Great movie!Great movie!Great movie!Great movie!Great movie!Great movie!Great movie!Great movie!Great movie!Great movie!Great movie!Great movie!"
         );
         commentRepository.save(comment);
+
+        for (int i = 0; i < 20; i++) {
+            Comment commentNew = new Comment(
+                    client,
+                    movie,
+                    LocalDateTime.now(),
+                    "Great movie!Great movie!Great movie!Great movie!Great movie!Great movie!Great movie!Great movie!Great movie!Great movie!Great movie!Great movie!Great movie!Great movie!Great movie!Great movie!Great movie!Great movie!Great movie!Great movie!Great movie!Great movie!Great movie!Great movie!Great movie!Great movie!"
+            );
+            commentRepository.save(commentNew);
+        }
 
         // Создаем обзор
         Review review = new Review(
@@ -83,6 +93,7 @@ public class Clr implements CommandLineRunner {
                 "One of the best movies ever!"
         );
         reviewRepository.save(review);
+        System.out.println("Review ID: " + review.getId());
 
         // Создаем реакцию на комментарий
         Reaction reaction = new Reaction(
@@ -90,7 +101,12 @@ public class Clr implements CommandLineRunner {
                 comment,
                 true
         );
+
         reactionRepository.save(reaction);
+        var reviewReaction = reactionRepository.findByReviewId(review.getId());
+        var commentReaction = reactionRepository.findByCommentId(comment.getId());
+        System.out.println(reviewReaction.stream().toList());
+        System.out.println(commentReaction.stream().toList());
 
         // Тестируем поиск
         System.out.println("Finding media by name: " + mediaRepository.findByName("The Matrix").getName());
