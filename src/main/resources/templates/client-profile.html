@@ -61,6 +61,35 @@
       </div>
     </div>
   </div>
+  <form th:action="@{/client/{id}(id=${model.clientCard.clientId})}" method="get">
+    <input type="hidden" name="commentFilter.page" th:value="${commentFilter.page}" />
+    <input type="hidden" name="commentFilter.size" th:value="${commentFilter.size}" />
+
+    <nav aria-label="Reviews pagination" th:if="${not #lists.isEmpty(model.lastReviews)}" class="mt-3">
+      <ul class="pagination pagination-sm justify-content-center">
+        <li class="page-item" th:classappend="${model.lastReviews[0].currentPage == 1} ? 'disabled'">
+          <button type="submit" class="page-link" name="reviewFilter.page" th:value="${model.lastReviews[0].currentPage - 1}">
+            Previous
+          </button>
+        </li>
+
+        <li class="page-item"
+            th:each="pageNumber : ${#numbers.sequence(1, model.lastReviews[0].totalPages)}"
+            th:classappend="${pageNumber == model.lastReviews[0].currentPage} ? 'active'">
+          <button type="submit" class="page-link" name="reviewFilter.page" th:value="${pageNumber}" th:text="${pageNumber}">
+            1
+          </button>
+        </li>
+
+        <li class="page-item" th:classappend="${model.lastReviews[0].currentPage == model.lastReviews[0].totalPages} ? 'disabled'">
+          <button type="submit" class="page-link" name="reviewFilter.page" th:value="${model.lastReviews[0].currentPage + 1}">
+            Next
+          </button>
+        </li>
+      </ul>
+    </nav>
+  </form>
+
 </section>
 
 <section class="mt-5" th:if="${not #lists.isEmpty(model.lastComments)}">
@@ -167,28 +196,35 @@
     </div>
   </div>
 
-  <nav aria-label="Comments pagination" th:if="${not #lists.isEmpty(model.lastComments)}" class="mt-3">
-    <ul class="pagination pagination-sm justify-content-center">
-      <li class="page-item" th:classappend="${model.lastComments[0].currentPage == 1} ? 'disabled' : ''">
-        <a class="page-link"
-           th:href="@{/client/{id}(id=${model.clientCard.clientId}, page=${model.lastComments[0].currentPage - 1}, size=${commentFilter.size})}">Previous</a>
-      </li>
+  <form th:action="@{/client/{id}(id=${model.clientCard.clientId})}" method="get">
+    <input type="hidden" name="reviewFilter.page" th:value="${reviewFilter.page}" />
+    <input type="hidden" name="reviewFilter.size" th:value="${reviewFilter.size}" />
 
-      <li class="page-item"
-          th:each="pageNumber : ${#numbers.sequence(1, model.lastComments[0].totalPages)}"
-          th:classappend="${pageNumber == model.lastComments[0].currentPage} ? 'active' : ''">
-        <a class="page-link"
-           th:href="@{/client/{id}(id=${model.clientCard.clientId}, page=${pageNumber}, size=${commentFilter.size})}"
-           th:text="${pageNumber}"></a>
-      </li>
+    <nav aria-label="Comments pagination" th:if="${not #lists.isEmpty(model.lastComments)}" class="mt-3">
+      <ul class="pagination pagination-sm justify-content-center">
+        <li class="page-item" th:classappend="${model.lastComments[0].currentPage == 1} ? 'disabled'">
+          <button type="submit" class="page-link" name="commentFilter.page" th:value="${model.lastComments[0].currentPage - 1}">
+            Previous
+          </button>
+        </li>
 
-      <li class="page-item"
-          th:classappend="${model.lastComments[0].currentPage == model.lastComments[0].totalPages} ? 'disabled' : ''">
-        <a class="page-link"
-           th:href="@{/client/{id}(id=${model.clientCard.clientId}, page=${model.lastComments[0].currentPage + 1}, size=${commentFilter.size})}">Next</a>
-      </li>
-    </ul>
-  </nav>
+        <li class="page-item"
+            th:each="pageNumber : ${#numbers.sequence(1, model.lastComments[0].totalPages)}"
+            th:classappend="${pageNumber == model.lastComments[0].currentPage} ? 'active'">
+          <button type="submit" class="page-link" name="commentFilter.page" th:value="${pageNumber}" th:text="${pageNumber}">
+            1
+          </button>
+        </li>
+
+        <li class="page-item" th:classappend="${model.lastComments[0].currentPage == model.lastComments[0].totalPages} ? 'disabled'">
+          <button type="submit" class="page-link" name="commentFilter.page" th:value="${model.lastComments[0].currentPage + 1}">
+            Next
+          </button>
+        </li>
+      </ul>
+    </nav>
+  </form>
+
 </section>
 
 

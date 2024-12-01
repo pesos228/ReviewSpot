@@ -44,10 +44,10 @@ public class MediaControllerImpl implements MediaController {
     public String mediaPage(@ModelAttribute("commentFilter") CommentPageFormModel commentFilter,
                             @ModelAttribute("reviewFilter") ReviewPageFormModel reviewFilter,
                             @PathVariable int id, Model model){
-        var commentPage = commentFilter.page() != null ? commentFilter.page() : 1;
-        var commentSize = commentFilter.size() != null ? commentFilter.size() : 10;
-        var reviewPage = reviewFilter.page() != null ? reviewFilter.page() : 1;
-        var reviewSize = reviewFilter.size() != null ? reviewFilter.size() : 4;
+        var commentPage = commentFilter.getPage() != null ? commentFilter.getPage() : 1;
+        var commentSize = commentFilter.getSize() != null ? commentFilter.getSize() : 10;
+        var reviewPage = reviewFilter.getPage() != null ? reviewFilter.getPage() : 1;
+        var reviewSize = reviewFilter.getSize() != null ? reviewFilter.getSize() : 4;
 
         var base = createBaseViewModel("Media page", 2, null, null);
         var media = mediaService.findById(id);

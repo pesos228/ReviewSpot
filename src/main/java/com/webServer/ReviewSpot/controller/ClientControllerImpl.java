@@ -18,10 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
 
 @Controller
 @RequestMapping("/client")
@@ -42,14 +39,19 @@ public class ClientControllerImpl implements ClientController {
 
     @Override
     @GetMapping("/{id}")
-    public String clientProfile(@ModelAttribute("reviewFilter") ReviewPageFormModel reviewFilter, @ModelAttribute("commentFilter") CommentPageFormModel commentFilter, @PathVariable int id, Model model) {
-        var commentPage = commentFilter.page() != null ? commentFilter.page() : 1;
-        var commentSize = commentFilter.size() != null ? commentFilter.size() : 3;
-        var reviewPage = reviewFilter.page() != null ? reviewFilter.page() : 1;
-        var reviewSize = reviewFilter.size() != null ? reviewFilter.size() : 4;
+    public String clientProfile(@RequestParam(name = "commentFilter.page", required = false, defaultValue = "1") Integer commentPage,
+                                @RequestParam(name = "commentFilter.size", required = false, defaultValue = "3") Integer commentSize,
+                                @RequestParam(name = "reviewFilter.page", required = false, defaultValue = "1") Integer reviewPage,
+                                @RequestParam(name = "reviewFilter.size", required = false, defaultValue = "4") Integer reviewSize,
+                                @PathVariable int id,
+                                Model model) {
 
-        var safeCommentFilter = new CommentPageFormModel(commentPage, commentSize);
-        var safeReviewFilter = new ReviewPageFormModel(reviewPage, reviewSize);
+
+        var commentFilter = new CommentPageFormModel(commentPage, commentSize);
+        var reviewFilter = new ReviewPageFormModel(reviewPage, reviewSize);
+
+        System.out.println("Final commentPage: " + commentPage);
+        System.out.println("Final commentSize: " + commentSize);
 
         var base = createBaseViewModel("Client profile", 2,"Testik", "https://png.pngtree.com/png-vector/20240123/ourlarge/pngtree-cute-little-orange-cat-cute-kitty-png-image_11459046.png");
         var clientWeb = clientService.findById(id);
@@ -69,8 +71,8 @@ public class ClientControllerImpl implements ClientController {
         var clientProfile = new ClientProfileViewModel(base, clientCard, commentCard, reviewCard);
 
         model.addAttribute("model", clientProfile);
-        model.addAttribute("commentFilter", safeCommentFilter);
-        model.addAttribute("reviewFilter", safeReviewFilter);
+        model.addAttribute("commentFilter", commentFilter);
+        model.addAttribute("reviewFilter", reviewFilter);
 
         return "client-profile";
     }
