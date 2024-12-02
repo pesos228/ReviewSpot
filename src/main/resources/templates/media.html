@@ -1,10 +1,371 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
 <head>
+    <link href="/css/bootstrap.min.css" rel="stylesheet">
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title th:text="${model.currentClient.title}"></title>
 </head>
-<body>
+<body class="text-bg-dark">
+<header>
+    <nav class="navbar bg-body-dark">
+        <a href="/" class="navbar-brand fs-2 text-white h1 mx-2">Review Spot</a>
+        <ul class="nav justify-content-end ">
+            <li class="nav-item">
+                <img th:src="${model.currentClient.clientPhotoUrl}" alt="clientPhoto" width="48" height="48" class="rounded-circle">
+            </li>
+            <li class="nav-item">
+                <a class="nav-link text-white" th:text="${model.currentClient.clientName}" th:href="@{/client/{id}(id=${model.currentClient.clientId})}">Link</a>
+            </li>
+        </ul>
+    </nav>
+</header>
 
+<section class="mt-5">
+    <div class="container">
+        <div class="row">
+            <div class="col-2">
+                <a th:href="@{/media/{id}(id=${model.mediaInfo.mediaId})}">
+                    <div class="ratio ratio-4x3">
+                        <img th:src="${model.mediaInfo.mediaPhotoUrl}" alt="Image" class="img-fluid object-fit-cover">
+                    </div>
+                </a>
+            </div>
+
+            <div class="col-8">
+                <p class="h1" th:text="${model.mediaInfo.mediaName}">Name</p>
+                <p class="mb-3">
+                    Жанры: <span th:each="genre, iterStat : ${model.mediaInfo.genres}"
+                                 th:text="${genre}"
+                                 th:if="${iterStat.index != 0}">, </span>
+                </p>
+
+
+                <p class="mb-3" th:text="'Описание: ' + ${model.mediaInfo.description}"></p>
+            </div>
+
+            <div class="col-2 d-flex align-items-center">
+                <p class="mb-3" th:text="'Средняя оценка: ' + ${model.mediaInfo.rating}"></p>
+            </div>
+        </div>
+    </div>
+
+    <div th:if="${error}" class="alert alert-danger w-25 mx-auto">
+        <p th:text="${error}"></p>
+    </div>
+
+</section>
+
+<section class="mt-5" th:if="${not #lists.isEmpty(model.lastReviews)}">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-12 text-center">
+                <h2 class="mb-4">Последние отзывы</h2>
+            </div>
+        </div>
+        <div class="row justify-content-center">
+            <div class="col-8 mb-4" th:each="review : ${model.lastReviews}">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center mb-3">
+                            <a th:href="@{/client/{id}(id=${review.clientId})}">
+                                <img th:src="${review.clientPhotoUrl}" class="me-3" width="50" height="50" alt="Client Photo">
+                            </a>
+                            <div>
+                                <h5 class="card-title mb-0" th:text="${review.clientName}"></h5>
+                                <div class="d-flex align-items-center">
+                                    <div class="me-2" th:text="'Оценка: ' + ${review.rating}"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <p class="card-text" th:text="${review.text}"></p>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <a th:href="@{/media/{id}(id=${review.mediaId})}" th:text="${review.mediaName}"></a>
+                            </div>
+                            <div>
+                                <span th:text="${review.watchStatus}"></span>
+                                <span th:text="${#temporals.format(review.dateTime, 'yyyy-MM-dd')}"></span>
+                            </div>
+                            <div>
+                                <span th:text="'Лайков: ' + ${review.likeCount}"></span>
+                                <span th:text="'Дизлайков: ' + ${review.dislikeCount}"></span>
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-between mt-3">
+                            <div th:if="${review.isLike}">
+                                <form action="/reaction/delete" method="post">
+                                    <input type="hidden" name="clientId" th:value="${model.currentClient.clientId}">
+                                    <input type="hidden" name="targetId" th:value="${review.reviewId}">
+                                    <input type="hidden" name="targetType" value="REVIEW">
+                                    <input type="hidden" name="like" value="true">
+                                    <input type="hidden" name="currentUrl" th:value="'/media/' + ${review.mediaId}">
+                                    <button type="submit" class="btn btn-primary active" aria-pressed="true">Unlike</button>
+                                </form>
+                            </div>
+                            <div th:if="${not review.isLike}">
+                                <form action="/reaction" method="post">
+                                    <input type="hidden" name="clientId" th:value="${model.currentClient.clientId}">
+                                    <input type="hidden" name="targetId" th:value="${review.reviewId}">
+                                    <input type="hidden" name="targetType" value="REVIEW">
+                                    <input type="hidden" name="like" value="true">
+                                    <input type="hidden" name="currentUrl" th:value="'/media/' + ${review.mediaId}">
+                                    <button type="submit" class="btn btn-primary">Like</button>
+                                </form>
+                            </div>
+                            <div th:if="${review.isDislike}">
+                                <form action="/reaction/delete" method="post">
+                                    <input type="hidden" name="clientId" th:value="${model.currentClient.clientId}">
+                                    <input type="hidden" name="targetId" th:value="${review.reviewId}">
+                                    <input type="hidden" name="targetType" value="REVIEW">
+                                    <input type="hidden" name="like" value="false">
+                                    <input type="hidden" name="currentUrl" th:value="'/media/' + ${review.mediaId}">
+                                    <button type="submit" class="btn btn-primary active" aria-pressed="true">Remove Dislike</button>
+                                </form>
+                            </div>
+                            <div th:if="${not review.isDislike}">
+                                <form action="/reaction" method="post">
+                                    <input type="hidden" name="clientId" th:value="${model.currentClient.clientId}">
+                                    <input type="hidden" name="targetId" th:value="${review.reviewId}">
+                                    <input type="hidden" name="targetType" value="REVIEW">
+                                    <input type="hidden" name="like" value="false">
+                                    <input type="hidden" name="currentUrl" th:value="'/media/' + ${review.mediaId}">
+                                    <button type="submit" class="btn btn-primary">Dislike</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <form th:action="@{/media/{id}(id=${model.mediaInfo.mediaId})}" method="get">
+        <input type="hidden" name="commentFilter.page" th:value="${commentFilter.page}" />
+        <input type="hidden" name="commentFilter.size" th:value="${commentFilter.size}" />
+
+        <nav aria-label="Reviews pagination" th:if="${not #lists.isEmpty(model.lastReviews)}" class="mt-3">
+            <ul class="pagination pagination-sm justify-content-center">
+                <li class="page-item" th:classappend="${model.lastReviews[0].currentPage == 1} ? 'disabled'">
+                    <button type="submit" class="page-link" name="reviewFilter.page" th:value="${model.lastReviews[0].currentPage - 1}">
+                        Previous
+                    </button>
+                </li>
+
+                <li class="page-item"
+                    th:each="pageNumber : ${#numbers.sequence(1, model.lastReviews[0].totalPages)}"
+                    th:classappend="${pageNumber == model.lastReviews[0].currentPage} ? 'active'">
+                    <button type="submit" class="page-link" name="reviewFilter.page" th:value="${pageNumber}" th:text="${pageNumber}">
+                        1
+                    </button>
+                </li>
+
+                <li class="page-item" th:classappend="${model.lastReviews[0].currentPage == model.lastReviews[0].totalPages} ? 'disabled'">
+                    <button type="submit" class="page-link" name="reviewFilter.page" th:value="${model.lastReviews[0].currentPage + 1}">
+                        Next
+                    </button>
+                </li>
+            </ul>
+        </nav>
+    </form>
+</section>
+
+<section class="mt-5">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-8">
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h4>Добавить отзыв</h4>
+                    </div>
+                    <div class="card-body">
+                        <form th:action="@{/review/add}" method="post" th:object="${reviewForm}">
+                            <input type="hidden" name="mediaId" th:value="${model.mediaInfo.mediaId}">
+                            <input type="hidden" name="clientId" th:value="${model.currentClient.clientId}">
+
+                            <div class="mb-3">
+                                <label class="form-label">Оценка</label>
+                                <select class="form-select" name="rating" required>
+                                    <option value="">Выберите оценку</option>
+                                    <option value="1">1</option>
+                                    <option value="2">2</option>
+                                    <option value="3">3</option>
+                                    <option value="4">4</option>
+                                    <option value="5">5</option>
+                                    <option value="6">6</option>
+                                    <option value="7">7</option>
+                                    <option value="8">8</option>
+                                    <option value="9">9</option>
+                                    <option value="10">10</option>
+                                </select>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Статус просмотра</label>
+                                <select class="form-select" name="watchStatus" required>
+                                    <option value="">Выберите статус</option>
+                                    <option value="WATCHING">Смотрю</option>
+                                    <option value="COMPLETED">Посмотрел</option>
+                                    <option value="DROPPED">Брошено</option>
+                                </select>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Ваш отзыв</label>
+                                <textarea class="form-control" name="text" rows="4" required placeholder="Напишите ваш отзыв"></textarea>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary">Отправить отзыв</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="mt-5" th:if="${not #lists.isEmpty(model.lastComments)}">
+    <div class="container">
+        <div class="row justify-content-center mt-3">
+            <div class="col-12">
+                <h4 class="text-center">Последние комментарии</h4>
+
+                <div class="row justify-content-center">
+                    <div class="col-8 mb-4" th:each="comment : ${model.lastComments}">
+                        <div class="card h-100">
+                            <div class="card-body">
+                                <div class="d-flex align-items-center mb-3">
+                                    <a th:href="@{/client/{id}(id=${comment.clientId})}">
+                                        <img th:src="${comment.clientPhotoUrl}" class="me-3" width="50" height="50" alt="Client Photo">
+                                    </a>
+                                    <div>
+                                        <h5 class="card-title mb-0" th:text="${comment.clientName}"></h5>
+                                        <div class="d-flex align-items-center">
+                                        </div>
+                                    </div>
+                                </div>
+                                <p class="card-text" th:text="${comment.text}"></p>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <a th:href="@{/media/{id}(id=${comment.mediaId})}" th:text="${comment.mediaName}"></a>
+                                    </div>
+                                    <div>
+                                        <span th:text="${#temporals.format(comment.dateTime, 'yyyy-MM-dd')}"></span>
+                                    </div>
+                                    <div>
+                                        <span th:text="'Лайков: ' + ${comment.likeCount}"></span>
+                                        <span th:text="'Дизлайков: ' + ${comment.dislikeCount}"></span>
+                                    </div>
+                                </div>
+
+                                <div class="d-flex justify-content-between mt-3">
+                                    <div th:if="${comment.isLike}">
+                                        <form action="/reaction/delete" method="post">
+                                            <input type="hidden" name="clientId" th:value="${model.currentClient.clientId}">
+                                            <input type="hidden" name="targetId" th:value="${comment.commentId}">
+                                            <input type="hidden" name="targetType" value="COMMENT">
+                                            <input type="hidden" name="like" value="true">
+                                            <input type="hidden" name="currentUrl" th:value="'/media/' + ${model.mediaInfo.mediaId}">
+                                            <button type="submit" class="btn btn-primary active" aria-pressed="true">Unlike</button>
+                                        </form>
+                                    </div>
+
+                                    <div th:if="${not comment.isLike}">
+                                        <form action="/reaction" method="post">
+                                            <input type="hidden" name="clientId" th:value="${model.currentClient.clientId}">
+                                            <input type="hidden" name="targetId" th:value="${comment.commentId}">
+                                            <input type="hidden" name="targetType" value="COMMENT">
+                                            <input type="hidden" name="like" value="true">
+                                            <input type="hidden" name="currentUrl" th:value="'/client/' + ${model.mediaInfo.mediaId}">
+                                            <button type="submit" class="btn btn-primary">Like</button>
+                                        </form>
+                                    </div>
+
+                                    <div th:if="${comment.isDislike}">
+                                        <form action="/reaction/delete" method="post">
+                                            <input type="hidden" name="clientId" th:value="${model.currentClient.clientId}">
+                                            <input type="hidden" name="targetId" th:value="${comment.commentId}">
+                                            <input type="hidden" name="targetType" value="COMMENT">
+                                            <input type="hidden" name="like" value="false">
+                                            <input type="hidden" name="currentUrl" th:value="'/client/' + ${model.mediaInfo.mediaId}">
+                                            <button type="submit" class="btn btn-primary active" aria-pressed="true">Remove Dislike</button>
+                                        </form>
+                                    </div>
+
+                                    <div th:if="${not comment.isDislike}">
+                                        <form action="/reaction" method="post">
+                                            <input type="hidden" name="clientId" th:value="${model.currentClient.clientId}">
+                                            <input type="hidden" name="targetId" th:value="${comment.commentId}">
+                                            <input type="hidden" name="targetType" value="COMMENT">
+                                            <input type="hidden" name="like" value="false">
+                                            <input type="hidden" name="currentUrl" th:value="'/client/' + ${model.mediaInfo.mediaId}">
+                                            <button type="submit" class="btn btn-primary">Dislike</button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <form th:action="@{/media/{id}(id=${model.mediaInfo.mediaId})}" method="get">
+        <input type="hidden" name="reviewFilter.page" th:value="${reviewFilter.page}" />
+        <input type="hidden" name="reviewFilter.size" th:value="${reviewFilter.size}" />
+
+        <nav aria-label="Comments pagination" th:if="${not #lists.isEmpty(model.lastComments)}" class="mt-3">
+            <ul class="pagination pagination-sm justify-content-center">
+                <li class="page-item" th:classappend="${model.lastComments[0].currentPage == 1} ? 'disabled'">
+                    <button type="submit" class="page-link" name="commentFilter.page" th:value="${model.lastComments[0].currentPage - 1}">
+                        Previous
+                    </button>
+                </li>
+
+                <li class="page-item"
+                    th:each="pageNumber : ${#numbers.sequence(1, model.lastComments[0].totalPages)}"
+                    th:classappend="${pageNumber == model.lastComments[0].currentPage} ? 'active'">
+                    <button type="submit" class="page-link" name="commentFilter.page" th:value="${pageNumber}" th:text="${pageNumber}">
+                        1
+                    </button>
+                </li>
+
+                <li class="page-item" th:classappend="${model.lastComments[0].currentPage == model.lastComments[0].totalPages} ? 'disabled'">
+                    <button type="submit" class="page-link" name="commentFilter.page" th:value="${model.lastComments[0].currentPage + 1}">
+                        Next
+                    </button>
+                </li>
+            </ul>
+        </nav>
+    </form>
+</section>
+
+<section class="mt-5">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-8">
+                <div class="card">
+                    <div class="card-header">
+                        <h4>Добавить комментарий</h4>
+                    </div>
+                    <div class="card-body">
+                        <form th:action="@{/comment/add}" method="post">
+                            <input type="hidden" name="mediaId" th:value="${model.mediaInfo.mediaId}">
+                            <input type="hidden" name="clientId" th:value="${model.currentClient.clientId}">
+
+                            <div class="mb-3">
+                                <label for="commentText" class="form-label">Ваш комментарий</label>
+                                <textarea class="form-control" id="commentText" name="text" rows="4" required placeholder="Напишите ваш комментарий"></textarea>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary">Отправить комментарий</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script src="/js/bootstrap.min.js"></script>
 </body>
 </html>

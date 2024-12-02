@@ -102,94 +102,81 @@
           <p th:text="${error}"></p>
         </div>
 
-        <div class="card mx-auto mt-3" th:each="comment : ${model.lastComments}">
-          <div class="row">
-
-            <div class="col-2 text-center">
-              <div class="mb-3">
-                <p class="mb-1" th:text="'Лайков: ' + ${comment.likeCount}"></p>
-                <p class="mb-0" th:text="'Дизлайков: ' + ${comment.dislikeCount}"></p>
-              </div>
-
-              <a th:href="@{/client/{id}(id=${comment.clientId})}">
-                <div class="ratio ratio-1x1">
-                  <img th:src="${comment.clientPhotoUrl}" class="img-fluid object-fit-cover" alt="Client Photo">
+        <div class="row justify-content-center">
+          <div class="col-8 mb-4" th:each="comment : ${model.lastComments}">
+            <div class="card h-100">
+              <div class="card-body">
+                <div class="d-flex align-items-center mb-3">
+                  <a th:href="@{/client/{id}(id=${comment.clientId})}">
+                    <img th:src="${comment.clientPhotoUrl}" class="me-3" width="50" height="50" alt="Client Photo">
+                  </a>
+                  <div>
+                    <h5 class="card-title mb-0" th:text="${comment.clientName}"></h5>
+                    <div class="d-flex align-items-center">
+                    </div>
+                  </div>
                 </div>
-              </a>
+                <p class="card-text" th:text="${comment.text}"></p>
+                <div class="d-flex justify-content-between align-items-center">
+                  <div>
+                    <a th:href="@{/media/{id}(id=${comment.mediaId})}" th:text="${comment.mediaName}"></a>
+                  </div>
+                  <div>
+                    <span th:text="${#temporals.format(comment.dateTime, 'yyyy-MM-dd')}"></span>
+                  </div>
+                  <div>
+                    <span th:text="'Лайков: ' + ${comment.likeCount}"></span>
+                    <span th:text="'Дизлайков: ' + ${comment.dislikeCount}"></span>
+                  </div>
+                </div>
 
-            </div>
+                <div class="d-flex justify-content-between mt-3">
+                  <div th:if="${comment.isLike}">
+                    <form action="/reaction/delete" method="post">
+                      <input type="hidden" name="clientId" th:value="${model.currentClient.clientId}">
+                      <input type="hidden" name="targetId" th:value="${comment.commentId}">
+                      <input type="hidden" name="targetType" value="COMMENT">
+                      <input type="hidden" name="like" value="true">
+                      <input type="hidden" name="currentUrl" th:value="'/client/' + ${model.clientCard.clientId}">
+                      <button type="submit" class="btn btn-primary active" aria-pressed="true">Unlike</button>
+                    </form>
+                  </div>
 
-            <div class="col-1 text-center mt-5">
-              <h5 class="card-title" th:text="${comment.clientName}"></h5>
-              <p class="card-title mt-0" th:text="${comment.mediaName}"></p>
+                  <div th:if="${not comment.isLike}">
+                    <form action="/reaction" method="post">
+                      <input type="hidden" name="clientId" th:value="${model.currentClient.clientId}">
+                      <input type="hidden" name="targetId" th:value="${comment.commentId}">
+                      <input type="hidden" name="targetType" value="COMMENT">
+                      <input type="hidden" name="like" value="true">
+                      <input type="hidden" name="currentUrl" th:value="'/client/' + ${model.clientCard.clientId}">
+                      <button type="submit" class="btn btn-primary">Like</button>
+                    </form>
+                  </div>
 
-            </div>
-            <div class="col-8 d-flex align-items-center text-center">
-              <p class="card-text mx-5" th:text="${comment.text}"></p>
-            </div>
+                  <div th:if="${comment.isDislike}">
+                    <form action="/reaction/delete" method="post">
+                      <input type="hidden" name="clientId" th:value="${model.currentClient.clientId}">
+                      <input type="hidden" name="targetId" th:value="${comment.commentId}">
+                      <input type="hidden" name="targetType" value="COMMENT">
+                      <input type="hidden" name="like" value="false">
+                      <input type="hidden" name="currentUrl" th:value="'/client/' + ${model.clientCard.clientId}">
+                      <button type="submit" class="btn btn-primary active" aria-pressed="true">Remove Dislike</button>
+                    </form>
+                  </div>
 
-            <div class="col-1 text-center d-flex align-items-center">
-              <div th:if="${comment.isLike}">
-                <form action="/reaction/delete" method="post">
-                  <input type="hidden" name="clientId" th:value="${model.currentClient.clientId}">
-                  <input type="hidden" name="targetId" th:value="${comment.commentId}">
-                  <input type="hidden" name="targetType" value="COMMENT">
-                  <input type="hidden" name="like" value="true">
-                  <input type="hidden" name="currentUrl" th:value="'/client/' + ${model.clientCard.clientId}">
-                  <button type="submit" class="btn btn-primary active" aria-pressed="true">Like</button>
-                </form>
-
-                <form action="/reaction" method="post">
-                  <input type="hidden" name="clientId" th:value="${model.currentClient.clientId}">
-                  <input type="hidden" name="targetId" th:value="${comment.commentId}">
-                  <input type="hidden" name="targetType" value="COMMENT">
-                  <input type="hidden" name="like" value="false">
-                  <input type="hidden" name="currentUrl" th:value="'/client/' + ${model.clientCard.clientId}">
-                  <button type="submit" class="btn btn-primary">Dislike</button>
-                </form>
-              </div>
-              <div th:if="${comment.isDislike}">
-                <form action="/reaction" method="post">
-                  <input type="hidden" name="clientId" th:value="${model.currentClient.clientId}">
-                  <input type="hidden" name="targetId" th:value="${comment.commentId}">
-                  <input type="hidden" name="targetType" value="COMMENT">
-                  <input type="hidden" name="like" value="true">
-                  <input type="hidden" name="currentUrl" th:value="'/client/' + ${model.clientCard.clientId}">
-                  <button type="submit" class="btn btn-primary">Like</button>
-                </form>
-
-                <form action="/reaction/delete" method="post">
-                  <input type="hidden" name="clientId" th:value="${model.currentClient.clientId}">
-                  <input type="hidden" name="targetId" th:value="${comment.commentId}">
-                  <input type="hidden" name="targetType" value="COMMENT">
-                  <input type="hidden" name="like" value="false">
-                  <input type="hidden" name="currentUrl" th:value="'/client/' + ${model.clientCard.clientId}">
-                  <button type="submit" class="btn btn-primary active" aria-pressed="true">Dislike</button>
-                </form>
-              </div>
-
-              <div th:if="${not comment.isLike and not comment.isDislike}">
-                <form action="/reaction" method="post">
-                  <input type="hidden" name="clientId" th:value="${model.currentClient.clientId}">
-                  <input type="hidden" name="targetId" th:value="${comment.commentId}">
-                  <input type="hidden" name="targetType" value="COMMENT">
-                  <input type="hidden" name="like" value="true">
-                  <input type="hidden" name="currentUrl" th:value="'/client/' + ${model.clientCard.clientId}">
-                  <button type="submit" class="btn btn-primary">Like</button>
-                </form>
-
-                <form action="/reaction" method="post">
-                  <input type="hidden" name="clientId" th:value="${model.currentClient.clientId}">
-                  <input type="hidden" name="targetId" th:value="${comment.commentId}">
-                  <input type="hidden" name="targetType" value="COMMENT">
-                  <input type="hidden" name="like" value="false">
-                  <input type="hidden" name="currentUrl" th:value="'/client/' + ${model.clientCard.clientId}">
-                  <button type="submit" class="btn btn-primary">Dislike</button>
-                </form>
-
+                  <div th:if="${not comment.isDislike}">
+                    <form action="/reaction" method="post">
+                      <input type="hidden" name="clientId" th:value="${model.currentClient.clientId}">
+                      <input type="hidden" name="targetId" th:value="${comment.commentId}">
+                      <input type="hidden" name="targetType" value="COMMENT">
+                      <input type="hidden" name="like" value="false">
+                      <input type="hidden" name="currentUrl" th:value="'/client/' + ${model.clientCard.clientId}">
+                      <button type="submit" class="btn btn-primary">Dislike</button>
+                    </form>
+                  </div>
+                </div>
               </div>
             </div>
-
           </div>
         </div>
       </div>
@@ -224,8 +211,8 @@
       </ul>
     </nav>
   </form>
-
 </section>
+
 
 
 

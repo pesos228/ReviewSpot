@@ -3,6 +3,7 @@ package com.webServer.ReviewSpot.controller;
 import com.reviewSpot.models.controllers.ReviewController;
 import com.reviewSpot.models.viewmodel.ReviewViewModel;
 import com.reviewSpot.models.viewmodel.card.BaseViewModel;
+import com.reviewSpot.models.viewmodel.form.review.ReviewFormModel;
 import com.reviewSpot.models.viewmodel.form.review.ReviewPageFormModel;
 import com.webServer.ReviewSpot.service.MediaService;
 import com.webServer.ReviewSpot.service.ReactionService;
@@ -36,19 +37,15 @@ public class ReviewControllerImpl implements ReviewController {
     public String reviewPreview(@PathVariable int id, Model model) {
         var review = reviewService.findById(id);
         var media = mediaService.findById(review.getMediaId());
-        var baseView = createBaseViewModel("Review page", 2, null, null);
+        var baseView = createBaseViewModel("Review page", 2,"Testik", "https://png.pngtree.com/png-vector/20240123/ourlarge/pngtree-cute-little-orange-cat-cute-kitty-png-image_11459046.png");
 
-        model.addAttribute("model", new ReviewViewModel(baseView, media.getName(), review.getClientName(), review.getWatchStatus().toString(),
-                review.getText(), review.getRating(), review.getLikeCount(), review.getDislikeCount(), reactionService.isLike(review.getClientId(), id, "REVIEW"),
-                reactionService.isDislike(review.getClientId(), id, "REVIEW")));
+        model.addAttribute("model", new ReviewViewModel(baseView, review.getId(), media.getName(), media.getPhotoUrl(), media.getId(), review.getClientName(), review.getClientId(), review.getWatchStatus().toString(),
+                review.getText(), review.getRating(), review.getLikeCount(), review.getDislikeCount(), reactionService.isLike(baseView.clientId(), id, "REVIEW"),
+                reactionService.isDislike(baseView.clientId(), id, "REVIEW")));
+
+        model.addAttribute("reviewForm", new ReviewFormModel(baseView.clientId(), media.getId(), -1, null, null));
 
         return "review";
-    }
-
-    @Override
-    @GetMapping("/client/{id}")
-    public String reviewsClient(@ModelAttribute("filter") ReviewPageFormModel reviewPageFormModel, @PathVariable int id, Model model) {
-        return "";
     }
 
     @Override

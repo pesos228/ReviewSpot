@@ -50,9 +50,6 @@ public class ClientControllerImpl implements ClientController {
         var commentFilter = new CommentPageFormModel(commentPage, commentSize);
         var reviewFilter = new ReviewPageFormModel(reviewPage, reviewSize);
 
-        System.out.println("Final commentPage: " + commentPage);
-        System.out.println("Final commentSize: " + commentSize);
-
         var base = createBaseViewModel("Client profile", 2,"Testik", "https://png.pngtree.com/png-vector/20240123/ourlarge/pngtree-cute-little-orange-cat-cute-kitty-png-image_11459046.png");
         var clientWeb = clientService.findById(id);
 
@@ -61,9 +58,9 @@ public class ClientControllerImpl implements ClientController {
 
         var clientCard = new ClientCardViewModel(clientWeb.getId(), clientWeb.getName(), clientWeb.getPhotoUrl(), clientWeb.getComments().size(), clientWeb.getReviews().size());
         var commentCard = lastComments.stream().map(comment -> new CommentCardViewModel(comment.getId(), comment.getClientName(), comment.getClientPhotoUrl(), comment.getClientId(),
-                comment.getMediaName(), comment.getText(), comment.getDateTime(), comment.getLikeCount(), comment.getDislikeCount(), reactionService.isLike(base.clientId(), comment.getId(), "COMMENT"),
+                comment.getMediaName(), comment.getMediaId(), comment.getText(), comment.getDateTime(), comment.getLikeCount(), comment.getDislikeCount(), reactionService.isLike(base.clientId(), comment.getId(), "COMMENT"),
                 reactionService.isDislike(base.clientId(), comment.getId(), "COMMENT"), lastComments.getNumber() + 1, lastComments.getTotalPages())).toList();
-        var reviewCard = lastReviews.stream().map(review -> new ReviewCardViewModel(review.getId(), review.getClientName(), review.getClientPhotoUrl(), review.getMediaName(), review.getMediaId(), review.getMediaPhotoUrl(),
+        var reviewCard = lastReviews.stream().map(review -> new ReviewCardViewModel(review.getId(), review.getClientName(), review.getClientPhotoUrl(), review.getClientId(),  review.getMediaName(), review.getMediaId(), review.getMediaPhotoUrl(),
                 review.getRating(), review.getWatchStatus().toString(), review.getText(), review.getDateTime(), review.getLikeCount(), review.getDislikeCount(), reactionService.isLike(base.clientId(), review.getId(), "REVIEW"),
                 reactionService.isDislike(base.clientId(), review.getId(), "REVIEW"), lastReviews.getNumber() + 1, lastReviews.getTotalPages())).toList();
 

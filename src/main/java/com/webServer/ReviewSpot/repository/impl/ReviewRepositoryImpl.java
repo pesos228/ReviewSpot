@@ -93,7 +93,7 @@ public class ReviewRepositoryImpl implements ReviewRepository {
     public Page<Review> getReviewsByMediaId(int id, Pageable pageable) {
         Long reviewCount;
         try {
-            reviewCount = entityManager.createQuery("SELECT COUNT(r) FROM Review r JOIN r.media m WHERE m.id = :id ORDER BY r.dateTime DESC", Long.class)
+            reviewCount = entityManager.createQuery("SELECT COUNT(r) FROM Review r JOIN r.media m WHERE m.id = :id", Long.class)
                     .setParameter("id", id)
                     .getSingleResult();
         }catch (NoResultException e){
