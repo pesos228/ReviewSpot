@@ -128,4 +128,17 @@ public class ReviewRepositoryImpl implements ReviewRepository {
 
         return new PageImpl<>(reviews, pageable, reviewCount);
     }
+
+    @Override
+    public Review findByClientIdMediaId(int clientId, int mediaId) {
+        try {
+            return entityManager.createQuery("SELECT r FROM Review r JOIN r.client cl JOIN r.media m WHERE cl.id = :clientId AND m.id = :mediaId", Review.class)
+                    .setParameter("clientId", clientId)
+                    .setParameter("mediaId", mediaId)
+                    .getSingleResult();
+        } catch (NoResultException e) {
+            return null;
+        }
+    }
+
 }

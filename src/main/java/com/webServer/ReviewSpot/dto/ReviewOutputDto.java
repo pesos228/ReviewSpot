@@ -12,7 +12,7 @@ public class ReviewOutputDto extends ReviewInputDto{
     private int likeCount;
     private int dislikeCount;
 
-    public ReviewOutputDto(int clientId, int mediaId, int rating, WatchStatus watchStatus, String text, String clientName, String clientPhotoUrl, String mediaName, String mediaPhotoUrl, int id, LocalDateTime dateTime, int likeCount, int dislikeCount) {
+    public ReviewOutputDto(int clientId, int mediaId, int rating, String watchStatus, String text, String clientName, String clientPhotoUrl, String mediaName, String mediaPhotoUrl, int id, LocalDateTime dateTime, int likeCount, int dislikeCount) {
         super(clientId, mediaId, rating, watchStatus, text);
         this.clientName = clientName;
         this.clientPhotoUrl = clientPhotoUrl;

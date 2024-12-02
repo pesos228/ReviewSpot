@@ -2,6 +2,7 @@ package com.webServer.ReviewSpot.service;
 
 import com.webServer.ReviewSpot.dto.ReviewInputDto;
 import com.webServer.ReviewSpot.dto.ReviewOutputDto;
+import jakarta.validation.constraints.NotNull;
 import org.springframework.data.domain.Page;
 
 import java.time.LocalDateTime;
@@ -18,4 +19,5 @@ public interface ReviewService {
     List<ReviewOutputDto> getLastReviewsByClientId(int id, int count);
     Page<ReviewOutputDto> getReviewsByMediaId(int id, int reviewPage, int reviewSize);
     Page<ReviewOutputDto> getReviewsByClientId(int id, int reviewPage, int reviewSize);
+    ReviewOutputDto findByClientIdMediaId(int clientId, int mediaId);
 }

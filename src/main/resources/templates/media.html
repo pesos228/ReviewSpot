@@ -66,17 +66,25 @@
             <div class="col-8 mb-4" th:each="review : ${model.lastReviews}">
                 <div class="card h-100">
                     <div class="card-body">
-                        <div class="d-flex align-items-center mb-3">
-                            <a th:href="@{/client/{id}(id=${review.clientId})}">
-                                <img th:src="${review.clientPhotoUrl}" class="me-3" width="50" height="50" alt="Client Photo">
-                            </a>
-                            <div>
-                                <h5 class="card-title mb-0" th:text="${review.clientName}"></h5>
-                                <div class="d-flex align-items-center">
-                                    <div class="me-2" th:text="'Оценка: ' + ${review.rating}"></div>
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <div class="w-25 d-flex align-items-center">
+                                <a th:href="@{/client/{id}(id=${review.clientId})}">
+                                    <img th:src="${review.clientPhotoUrl}" class="me-3" width="50" height="50" alt="Client Photo">
+                                </a>
+                                <div>
+                                    <h5 class="card-title mb-0" th:text="${review.clientName}"></h5>
+                                    <div class="d-flex align-items-center">
+                                        <div class="me-2" th:text="'Оценка: ' + ${review.rating}"></div>
+                                    </div>
                                 </div>
                             </div>
+                            <form action="/review/delete" method="post" class="ms-auto" th:if="${review.clientId == model.currentClient.clientId}">
+                                <input type="hidden" name="reviewId" th:value="${review.reviewId}">
+                                <input type="hidden" name="currentUrl" th:value="'/media/' + ${review.mediaId}">
+                                <button type="submit" class="btn btn-outline-danger">Delete</button>
+                            </form>
                         </div>
+
                         <p class="card-text" th:text="${review.text}"></p>
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
@@ -177,9 +185,10 @@
                         <h4>Добавить отзыв</h4>
                     </div>
                     <div class="card-body">
-                        <form th:action="@{/review/add}" method="post" th:object="${reviewForm}">
-                            <input type="hidden" name="mediaId" th:value="${model.mediaInfo.mediaId}">
+                        <form th:action="@{/review}" method="post" th:object="${reviewForm}">
                             <input type="hidden" name="clientId" th:value="${model.currentClient.clientId}">
+                            <input type="hidden" name="mediaId" th:value="${model.mediaInfo.mediaId}">
+                            <input type="hidden" name="currentUrl" th:value="'/media/' + ${model.mediaInfo.mediaId}">
 
                             <div class="mb-3">
                                 <label class="form-label">Оценка</label>
@@ -232,15 +241,22 @@
                     <div class="col-8 mb-4" th:each="comment : ${model.lastComments}">
                         <div class="card h-100">
                             <div class="card-body">
-                                <div class="d-flex align-items-center mb-3">
-                                    <a th:href="@{/client/{id}(id=${comment.clientId})}">
-                                        <img th:src="${comment.clientPhotoUrl}" class="me-3" width="50" height="50" alt="Client Photo">
-                                    </a>
+                                <div class="d-flex justify-content-between mb-3">
                                     <div>
-                                        <h5 class="card-title mb-0" th:text="${comment.clientName}"></h5>
-                                        <div class="d-flex align-items-center">
+                                        <a th:href="@{/client/{id}(id=${comment.clientId})}">
+                                            <img th:src="${comment.clientPhotoUrl}" class="me-3" width="50" height="50" alt="Client Photo">
+                                        </a>
+                                        <div>
+                                            <h5 class="card-title mb-0" th:text="${comment.clientName}"></h5>
+                                            <div class="d-flex align-items-center">
+                                            </div>
                                         </div>
                                     </div>
+                                    <form action="/comment/delete" method="post" class="ms-auto" th:if="${comment.clientId == model.currentClient.clientId}">
+                                        <input type="hidden" name="commentId" th:value="${comment.commentId}">
+                                        <input type="hidden" name="currentUrl" th:value="'/media/' + ${model.mediaInfo.mediaId}">
+                                        <button type="submit" class="btn btn-outline-danger">Delete</button>
+                                    </form>
                                 </div>
                                 <p class="card-text" th:text="${comment.text}"></p>
                                 <div class="d-flex justify-content-between align-items-center">
@@ -274,7 +290,7 @@
                                             <input type="hidden" name="targetId" th:value="${comment.commentId}">
                                             <input type="hidden" name="targetType" value="COMMENT">
                                             <input type="hidden" name="like" value="true">
-                                            <input type="hidden" name="currentUrl" th:value="'/client/' + ${model.mediaInfo.mediaId}">
+                                            <input type="hidden" name="currentUrl" th:value="'/media/' + ${model.mediaInfo.mediaId}">
                                             <button type="submit" class="btn btn-primary">Like</button>
                                         </form>
                                     </div>
@@ -285,7 +301,7 @@
                                             <input type="hidden" name="targetId" th:value="${comment.commentId}">
                                             <input type="hidden" name="targetType" value="COMMENT">
                                             <input type="hidden" name="like" value="false">
-                                            <input type="hidden" name="currentUrl" th:value="'/client/' + ${model.mediaInfo.mediaId}">
+                                            <input type="hidden" name="currentUrl" th:value="'/media/' + ${model.mediaInfo.mediaId}">
                                             <button type="submit" class="btn btn-primary active" aria-pressed="true">Remove Dislike</button>
                                         </form>
                                     </div>
@@ -296,7 +312,7 @@
                                             <input type="hidden" name="targetId" th:value="${comment.commentId}">
                                             <input type="hidden" name="targetType" value="COMMENT">
                                             <input type="hidden" name="like" value="false">
-                                            <input type="hidden" name="currentUrl" th:value="'/client/' + ${model.mediaInfo.mediaId}">
+                                            <input type="hidden" name="currentUrl" th:value="'/media/' + ${model.mediaInfo.mediaId}">
                                             <button type="submit" class="btn btn-primary">Dislike</button>
                                         </form>
                                     </div>
@@ -348,13 +364,14 @@
                         <h4>Добавить комментарий</h4>
                     </div>
                     <div class="card-body">
-                        <form th:action="@{/comment/add}" method="post">
+                        <form th:action="@{/comment}" method="post">
                             <input type="hidden" name="mediaId" th:value="${model.mediaInfo.mediaId}">
                             <input type="hidden" name="clientId" th:value="${model.currentClient.clientId}">
+                            <input type="hidden" name="currentUrl" th:value="'/media/' + ${model.mediaInfo.mediaId}">
 
                             <div class="mb-3">
-                                <label for="commentText" class="form-label">Ваш комментарий</label>
-                                <textarea class="form-control" id="commentText" name="text" rows="4" required placeholder="Напишите ваш комментарий"></textarea>
+                                <label class="form-label">Ваш комментарий</label>
+                                <textarea class="form-control" name="text" rows="4" required placeholder="Напишите ваш комментарий"></textarea>
                             </div>
 
                             <button type="submit" class="btn btn-primary">Отправить комментарий</button>

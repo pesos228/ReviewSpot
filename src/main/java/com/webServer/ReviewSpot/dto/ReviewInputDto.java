@@ -4,10 +4,10 @@ public class ReviewInputDto {
     private int clientId;
     private int mediaId;
     private int rating;
-    private WatchStatus watchStatus;
+    private String watchStatus;
     private String text;
 
-    public ReviewInputDto(int clientId, int mediaId, int rating, WatchStatus watchStatus, String text) {
+    public ReviewInputDto(int clientId, int mediaId, int rating, String watchStatus, String text) {
         this.clientId = clientId;
         this.mediaId = mediaId;
         this.rating = rating;
@@ -42,11 +42,11 @@ public class ReviewInputDto {
         this.rating = rating;
     }
 
-    public WatchStatus getWatchStatus() {
+    public String getWatchStatus() {
         return watchStatus;
     }
 
-    public void setWatchStatus(WatchStatus watchStatus) {
+    public void setWatchStatus(String watchStatus) {
         this.watchStatus = watchStatus;
     }
 

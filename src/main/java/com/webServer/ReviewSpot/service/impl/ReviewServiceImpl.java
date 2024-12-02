@@ -170,9 +170,8 @@ public class ReviewServiceImpl implements ReviewService {
                 }
             }
 
-            ReviewInputDto.WatchStatus watchStatus = ReviewInputDto.WatchStatus.valueOf(review.getWatchStatus().toUpperCase());
             return new ReviewOutputDto(review.getClient().getId(), review.getMedia().getId(), review.getRating(),
-                    watchStatus, review.getText(), review.getClient().getName(), review.getClient().getPhotoUrl(), review.getMedia().getName(), review.getMedia().getPhotoUrl(),
+                    review.getWatchStatus().toUpperCase(), review.getText(), review.getClient().getName(), review.getClient().getPhotoUrl(), review.getMedia().getName(), review.getMedia().getPhotoUrl(),
                     review.getId(), review.getDateTime(), likeCount, dislikeCount);
         });
     }
@@ -197,12 +196,19 @@ public class ReviewServiceImpl implements ReviewService {
                     dislikeCount++;
                 }
             }
-
-            ReviewInputDto.WatchStatus watchStatus = ReviewInputDto.WatchStatus.valueOf(review.getWatchStatus().toUpperCase());
             return new ReviewOutputDto(review.getClient().getId(), review.getMedia().getId(), review.getRating(),
-                    watchStatus, review.getText(), review.getClient().getName(), review.getClient().getPhotoUrl(), review.getMedia().getName(), review.getMedia().getPhotoUrl(),
+                    review.getWatchStatus().toUpperCase(), review.getText(), review.getClient().getName(), review.getClient().getPhotoUrl(), review.getMedia().getName(), review.getMedia().getPhotoUrl(),
                     review.getId(), review.getDateTime(), likeCount, dislikeCount);
         });
+    }
+
+    @Override
+    public ReviewOutputDto findByClientIdMediaId(int clientId, int mediaId) {
+        var review = reviewRepository.findByClientIdMediaId(clientId, mediaId);
+        if (review == null){
+            throw new ReviewNotFoundException("Client with id: " + clientId + " doesnt have a review with id: " + mediaId);
+        }
+        return createReviewOutputDto(Collections.singletonList(review)).getFirst();
     }
 
     private List<ReviewOutputDto> createReviewOutputDto(List<Review> reviews){
@@ -221,10 +227,8 @@ public class ReviewServiceImpl implements ReviewService {
 
             }
 
-            ReviewInputDto.WatchStatus watchStatus = ReviewInputDto.WatchStatus.valueOf(review.getWatchStatus().toUpperCase());
-
             ReviewOutputDto reviewOutputDto = new ReviewOutputDto(review.getClient().getId(), review.getMedia().getId(), review.getRating(),
-                    watchStatus, review.getText(), review.getClient().getName(), review.getClient().getPhotoUrl(), review.getMedia().getName(), review.getMedia().getPhotoUrl(),
+                    review.getWatchStatus().toUpperCase(), review.getText(), review.getClient().getName(), review.getClient().getPhotoUrl(), review.getMedia().getName(), review.getMedia().getPhotoUrl(),
                     review.getId(), review.getDateTime(), likeCount, dislikeCount);
 
             reviewOutputDtos.add(reviewOutputDto);

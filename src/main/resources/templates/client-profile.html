@@ -106,15 +106,22 @@
           <div class="col-8 mb-4" th:each="comment : ${model.lastComments}">
             <div class="card h-100">
               <div class="card-body">
-                <div class="d-flex align-items-center mb-3">
-                  <a th:href="@{/client/{id}(id=${comment.clientId})}">
-                    <img th:src="${comment.clientPhotoUrl}" class="me-3" width="50" height="50" alt="Client Photo">
-                  </a>
+                <div class="d-flex justify-content-between mb-3">
                   <div>
-                    <h5 class="card-title mb-0" th:text="${comment.clientName}"></h5>
-                    <div class="d-flex align-items-center">
+                    <a th:href="@{/client/{id}(id=${comment.clientId})}">
+                      <img th:src="${comment.clientPhotoUrl}" class="me-3" width="50" height="50" alt="Client Photo">
+                    </a>
+                    <div>
+                      <h5 class="card-title mb-0" th:text="${comment.clientName}"></h5>
+                      <div class="d-flex align-items-center">
+                      </div>
                     </div>
                   </div>
+                  <form action="/comment/delete" method="post" class="ms-auto" th:if="${comment.clientId == model.currentClient.clientId}">
+                    <input type="hidden" name="commentId" th:value="${comment.commentId}">
+                    <input type="hidden" name="currentUrl" th:value="'/client/' + ${comment.clientId}">
+                    <button type="submit" class="btn btn-outline-danger">Удалить</button>
+                  </form>
                 </div>
                 <p class="card-text" th:text="${comment.text}"></p>
                 <div class="d-flex justify-content-between align-items-center">

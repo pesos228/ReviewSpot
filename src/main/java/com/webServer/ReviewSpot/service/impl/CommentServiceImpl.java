@@ -7,6 +7,7 @@ import com.webServer.ReviewSpot.entity.Comment;
 import com.webServer.ReviewSpot.entity.Media;
 import com.webServer.ReviewSpot.entity.Reaction;
 import com.webServer.ReviewSpot.exceptions.ClientNotFoundException;
+import com.webServer.ReviewSpot.exceptions.CommentNotFoundException;
 import com.webServer.ReviewSpot.exceptions.MediaNotFoundException;
 import com.webServer.ReviewSpot.repository.ClientRepository;
 import com.webServer.ReviewSpot.repository.CommentRepository;
@@ -174,9 +175,9 @@ public class CommentServiceImpl implements CommentService {
     @Override
     @Transactional
     public void deleteById(int id) {
-        Client client = clientRepository.findById(id);
-        if (client == null){
-            throw new ClientNotFoundException("Client with id: " + id + " not found");
+        var comment = commentRepository.findById(id);
+        if (comment == null){
+            throw new CommentNotFoundException("Comment with id: " + id + " not found");
         }
 
         commentRepository.deleteById(id);

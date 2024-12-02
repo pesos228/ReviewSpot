@@ -87,6 +87,11 @@
                         <button type="submit" class="btn btn-primary">Dislike</button>
                     </form>
                 </div>
+                <form action="/review/delete" method="post" class="ms-auto" th:if="${model.currentClient.clientId == model.clientId}">
+                    <input type="hidden" name="reviewId" th:value="${model.reviewId}">
+                    <input type="hidden" name="currentUrl" th:value="'/client/' + ${model.clientId}">
+                    <button type="submit" class="btn btn-danger">Delete</button>
+                </form>
             </div>
             </div>
 
