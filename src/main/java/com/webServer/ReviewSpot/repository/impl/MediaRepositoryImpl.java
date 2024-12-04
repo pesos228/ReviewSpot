@@ -147,17 +147,20 @@ public class MediaRepositoryImpl implements MediaRepository {
     public Page<Media> findByNameContainingAndByGenres(String namePart, List<Genre> genreList, Pageable pageable) {
         Long mediaCount;
         try {
-            mediaCount = entityManager.createQuery("SELECT COUNT(DISTINCT m) FROM Media m JOIN m.genreList g WHERE LOWER(m.name) LIKE :namePart AND g IN :genreList " +
-                    "GROUP BY m HAVING COUNT(DISTINCT g) = :genreCount", Long.class)
+            mediaCount = entityManager.createQuery(
+                            "SELECT COUNT(DISTINCT m) FROM Media m JOIN m.genreList g WHERE LOWER(m.name) LIKE :namePart AND g IN :genreList GROUP BY m HAVING COUNT(DISTINCT g) = :genreCount",
+                            Long.class)
+                    .setParameter("namePart", "%" + namePart.toLowerCase().trim() + "%")
                     .setParameter("genreList", genreList)
                     .setParameter("genreCount", genreList.size())
                     .getSingleResult();
-        }catch (NoResultException e){
+        } catch (NoResultException e) {
             return new PageImpl<>(Collections.emptyList(), pageable, 0);
         }
 
-        var mediaList = entityManager.createQuery("SELECT DISTINCT m FROM Media m JOIN m.genreList g WHERE LOWER(m.name) LIKE :namePart AND g IN :genreList " +
-                "GROUP BY m HAVING COUNT(DISTINCT g) = :genreCount", Media.class)
+        var mediaList = entityManager.createQuery(
+                        "SELECT DISTINCT m FROM Media m JOIN m.genreList g WHERE LOWER(m.name) LIKE :namePart AND g IN :genreList GROUP BY m HAVING COUNT(DISTINCT g) = :genreCount",
+                        Media.class)
                 .setParameter("namePart", "%" + namePart.toLowerCase().trim() + "%")
                 .setParameter("genreList", genreList)
                 .setParameter("genreCount", genreList.size())
@@ -167,6 +170,7 @@ public class MediaRepositoryImpl implements MediaRepository {
 
         return new PageImpl<>(mediaList, pageable, mediaCount);
     }
+
 
     @Override
     public void deleteById(int id) {

@@ -34,11 +34,11 @@
             <div class="col-8">
                 <p class="h1" th:text="${model.mediaInfo.mediaName}">Name</p>
                 <p class="mb-3">
-                    Жанры: <span th:each="genre, iterStat : ${model.mediaInfo.genres}"
-                                 th:text="${genre}"
-                                 th:if="${iterStat.index != 0}">, </span>
+                    Жанры:
+                    <span th:each="genre, iter : ${model.mediaInfo.genres}">
+                        <span th:text="${genre}"></span><span th:if="${not iter.last}">, </span>
+                    </span>
                 </p>
-
 
                 <p class="mb-3" th:text="'Описание: ' + ${model.mediaInfo.description}"></p>
             </div>

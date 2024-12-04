@@ -2,6 +2,7 @@ package com.webServer.ReviewSpot.controller.adminPanel;
 
 import com.reviewSpot.models.controllers.adminPanel.AdminControllerEdit;
 import com.reviewSpot.models.viewmodel.card.BaseViewModel;
+import com.reviewSpot.models.viewmodel.form.client.ClientEditForm;
 import com.reviewSpot.models.viewmodel.form.client.ClientFormModel;
 import com.reviewSpot.models.viewmodel.form.genre.GenreFormModel;
 import com.reviewSpot.models.viewmodel.form.media.MediaFormModel;
@@ -50,8 +51,9 @@ public class AdminControllerEditImpl implements AdminControllerEdit {
         }
 
         model.addAttribute("form", new ClientFormModel(client.getName(), null, null, client.getPhotoUrl()));
-        model.addAttribute("model", model);
+        model.addAttribute("model", base);
         model.addAttribute("entity", "client");
+        model.addAttribute("clientId", id);
         return "admin-edit";
     }
 
@@ -67,8 +69,9 @@ public class AdminControllerEditImpl implements AdminControllerEdit {
             return "redirect:/admin";
         }
         model.addAttribute("form", new GenreFormModel(genre.getName()));
-        model.addAttribute("base", base);
+        model.addAttribute("model", base);
         model.addAttribute("entity", "genre");
+        model.addAttribute("genreId", id);
         return "admin-edit";
     }
 
@@ -83,24 +86,26 @@ public class AdminControllerEditImpl implements AdminControllerEdit {
             redirectAttributes.addFlashAttribute("error", e.getMessage());
             return "redirect:/admin";
         }
-        model.addAttribute("base", base);
+        model.addAttribute("model", base);
         model.addAttribute("form", new MediaFormModel(media.getName(), media.getPhotoUrl(), media.getDescription(), media.getGenre()));
         model.addAttribute("entity", "media");
+        model.addAttribute("mediaId", id);
+        model.addAttribute("genres", genreService.findAll().stream().map(GenreOutputDto::getName).toList());
 
         return "admin-edit";
     }
 
     @Override
     @PostMapping("/{id}/client")
-    public String createClient(@PathVariable int id, @Valid @ModelAttribute("clientForm") ClientFormModel clientFormModel,
+    public String createClient(@PathVariable int id, @Valid @ModelAttribute("clientForm") ClientEditForm clientEditForm,
                                BindingResult bindingResult, RedirectAttributes redirectAttributes) {
         if (bindingResult.hasErrors()){
             redirectAttributes.addFlashAttribute("error", "Error in filling out the form");
-            redirectAttributes.addFlashAttribute("form", clientFormModel);
+            redirectAttributes.addFlashAttribute("form", clientEditForm);
             return "redirect:/admin/edit/" + id + "/client";
         }
         try {
-            clientService.update(id,clientFormModel.name(), clientFormModel.photoUrl());
+            clientService.update(id,clientEditForm.name(), clientEditForm.photoUrl());
         }catch (ClientNotFoundException e){
             redirectAttributes.addFlashAttribute("error", e.getMessage());
             return "redirect:/admin/edit/" + id + "/client";
@@ -148,35 +153,6 @@ public class AdminControllerEditImpl implements AdminControllerEdit {
 
         redirectAttributes.addFlashAttribute("successMessage", "Media successfully updated!");
         return "redirect:/admin/media";
-    }
-
-    @Override
-    @DeleteMapping("/{id}/genre")
-    public String deleteGenre(@PathVariable int id, Model model, RedirectAttributes redirectAttributes) {
-        try {
-            genreService.deleteById(id);
-        }catch (GenreNotFoundException e){
-            redirectAttributes.addFlashAttribute("error", e.getMessage());
-            return "redirect:/admin";
-        }
-
-        redirectAttributes.addFlashAttribute("successMessage", "Genre successfully deleted!");
-        return "redirect:/admin/genre";
-
-    }
-
-    @Override
-    @DeleteMapping("/{id}/media")
-    public String deleteMedia(@PathVariable int id, Model model, RedirectAttributes redirectAttributes) {
-        try {
-            mediaService.deleteById(id);
-        }catch (MediaNotFoundException e){
-            redirectAttributes.addFlashAttribute("error", e.getMessage());
-            return "redirect:/admin";
-        }
-
-        redirectAttributes.addFlashAttribute("successMessage", "Media successfully deleted!");
-        return "redirect:/admin/genre";
     }
 
     @Override

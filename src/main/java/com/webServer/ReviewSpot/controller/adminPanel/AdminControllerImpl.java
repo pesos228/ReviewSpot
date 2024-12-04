@@ -33,7 +33,7 @@ public class AdminControllerImpl implements AdminController {
     @Override
     @GetMapping
     public String adminPanel(Model model) {
-        var base = createBaseViewModel("Admin panel", 1, null, null);
+        var base = createBaseViewModel("Admin panel", 2, "Testik", "https://png.pngtree.com/png-vector/20240123/ourlarge/pngtree-cute-little-orange-cat-cute-kitty-png-image_11459046.png");
         model.addAttribute("model", base);
         return "admin-main";
     }
@@ -43,11 +43,13 @@ public class AdminControllerImpl implements AdminController {
     public String adminPanelClient(@ModelAttribute("filter") ClientPageFormModel filter, Model model) {
         var page = filter.page() != null ? filter.page() : 1;
         var size = filter.size() != null ? filter.size() : 10;
-        var base = createBaseViewModel("Admin panel", 1, null, null);
+        filter = new ClientPageFormModel(page, size);
+        var base = createBaseViewModel("Admin panel", 2, "Testik", "https://png.pngtree.com/png-vector/20240123/ourlarge/pngtree-cute-little-orange-cat-cute-kitty-png-image_11459046.png");
         var clients = clientService.findAll(page, size);
 
         model.addAttribute("model", base);
         model.addAttribute("clients", clients);
+        model.addAttribute("filter", filter);
         model.addAttribute("entity", "client");
         return "admin-main";
     }
@@ -56,12 +58,17 @@ public class AdminControllerImpl implements AdminController {
     @GetMapping("/genre")
     public String adminPanelGenre(@ModelAttribute("filter") GenrePageFormModel filter, Model model) {
         var page = filter.page() != null ? filter.page() : 1;
-        var size = filter.size() != null ? filter.size() : 10;
-        var base = createBaseViewModel("Admin panel", 1, null, null);
+        var size = filter.size() != null ? filter.size() : 5;
+        filter = new GenrePageFormModel(page, size);
+
+        var base = createBaseViewModel("Admin panel", 2, "Testik", "https://png.pngtree.com/png-vector/20240123/ourlarge/pngtree-cute-little-orange-cat-cute-kitty-png-image_11459046.png");
         var genres = genreService.findAll(page, size);
+
+
 
         model.addAttribute("model", base);
         model.addAttribute("genres", genres);
+        model.addAttribute("filter", filter);
         model.addAttribute("entity", "genre");
         return "admin-main";
     }
@@ -71,11 +78,13 @@ public class AdminControllerImpl implements AdminController {
     public String adminPanelMedia(@ModelAttribute("filter")MediaPageFormModel filter, Model model) {
         var page = filter.page() != null ? filter.page() : 1;
         var size = filter.size() != null ? filter.size() : 10;
-        var base = createBaseViewModel("Admin panel", 1, null, null);
+        filter = new MediaPageFormModel(page, size);
+        var base = createBaseViewModel("Admin panel", 2, "Testik", "https://png.pngtree.com/png-vector/20240123/ourlarge/pngtree-cute-little-orange-cat-cute-kitty-png-image_11459046.png");
         var media = mediaService.findAll(page, size);
 
         model.addAttribute("model", base);
         model.addAttribute("media", media);
+        model.addAttribute("filter", filter);
         model.addAttribute("entity", "media");
         return "admin-main";
     }

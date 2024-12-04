@@ -51,6 +51,8 @@ public class GenreRepositoryImpl implements GenreRepository {
                 .getSingleResult();
 
         var genres = entityManager.createQuery("SELECT g FROM Genre g", Genre.class)
+                .setFirstResult((int) pageable.getOffset())
+                .setMaxResults(pageable.getPageSize())
                 .getResultList();
 
         return new PageImpl<>(genres, pageable, genreCount);

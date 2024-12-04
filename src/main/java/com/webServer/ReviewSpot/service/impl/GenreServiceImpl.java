@@ -2,11 +2,13 @@ package com.webServer.ReviewSpot.service.impl;
 
 import com.webServer.ReviewSpot.dto.GenreInputDto;
 import com.webServer.ReviewSpot.dto.GenreOutputDto;
+import com.webServer.ReviewSpot.dto.MediaInputDto;
 import com.webServer.ReviewSpot.entity.Genre;
 import com.webServer.ReviewSpot.exceptions.GenreAlreadyExistsException;
 import com.webServer.ReviewSpot.exceptions.GenreNotFoundException;
 import com.webServer.ReviewSpot.repository.GenreRepository;
 import com.webServer.ReviewSpot.service.GenreService;
+import com.webServer.ReviewSpot.service.MediaService;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -15,6 +17,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -22,11 +25,13 @@ import java.util.stream.Collectors;
 public class GenreServiceImpl implements GenreService{
 
     private final GenreRepository genreRepository;
+    private final MediaService mediaService;
     private final ModelMapper modelMapper;
 
     @Autowired
-    public GenreServiceImpl(GenreRepository genreRepository, ModelMapper modelMapper) {
+    public GenreServiceImpl(GenreRepository genreRepository, MediaService mediaService, ModelMapper modelMapper) {
         this.genreRepository = genreRepository;
+        this.mediaService = mediaService;
         this.modelMapper = modelMapper;
     }
 
@@ -64,6 +69,13 @@ public class GenreServiceImpl implements GenreService{
         if (genre == null){
             throw new GenreNotFoundException("Genre with ID: " + id + " not found");
         }
+        genre.getMediaList().forEach(media -> {
+            media.getGenreList().remove(genre);
+            List<String> genres = media.getGenreList().stream().map(Genre::getName).toList();
+            mediaService.update(media.getId(), media.getName(), media.getPhotoUrl(), media.getDescription(), genres);
+        });
+
+        genre.setMediaList(new ArrayList<>());
         genreRepository.deleteById(id);
     }
 

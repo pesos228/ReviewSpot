@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <link href="/css/bootstrap.min.css" rel="stylesheet">
+    <meta charset="UTF-8">
+    <title th:text="${model.title}"></title>
+</head>
+<body class="text-bg-dark">
+<header>
+    <nav class="navbar bg-body-dark">
+        <a href="/" class="navbar-brand fs-2 text-white h1 mx-2">Review Spot</a>
+        <ul class="nav justify-content-end">
+            <li class="nav-item">
+                <img th:src="${model.clientPhotoUrl}" alt="clientPhoto" width="48" height="48" class="rounded-circle">
+            </li>
+            <li class="nav-item">
+                <a class="nav-link text-white" th:text="${model.clientName}"
+                   th:href="@{/client/{id}(id=${model.clientId})}">Link</a>
+            </li>
+        </ul>
+    </nav>
+</header>
+
+<section class="mt-5">
+    <div class="container text-center position-absolute top-50 start-50 translate-middle">
+
+        <div th:if="${error}" class="alert alert-danger w-50 mx-auto" role="alert" th:text="${error}"></div>
+        <th:block  th:switch="${entity}">
+            <div th:case="'client'">
+                <form th:action="@{/admin/edit/{id}/client(id=${clientId})}" th:object="${form}" method="POST">
+                    <h2>Client edit page</h2>
+                    <div class="input-group mb-3 w-50 mx-auto">
+                        <span class="input-group-text">Имя</span>
+                        <input type="text" class="form-control" th:field="*{name}" placeholder="Введите имя" required>
+                    </div>
+                    <div class="input-group mb-3 w-50 mx-auto">
+                        <span class="input-group-text">URL Фото</span>
+                        <input type="text" class="form-control" th:field="*{photoUrl}" placeholder="Введите URL фото">
+                    </div>
+                    <button type="submit" class="btn btn-primary">Обновить</button>
+                </form>
+            </div>
+            <div th:case="'genre'">
+                <form th:action="@{/admin/edit/{id}/genre(id=${genreId})}" th:object="${form}" method="POST">
+                    <h2>Genre edit page</h2>
+                    <div class="input-group mb-3 w-50 mx-auto">
+                        <span class="input-group-text">Название</span>
+                        <input type="text" class="form-control" th:field="*{name}" placeholder="Введите название" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Обновить</button>
+                </form>
+            </div>
+            <div th:case="'media'">
+                <h2>Media edit page</h2>
+                <form th:action="@{/admin/edit/{id}/media(id=${mediaId})}" th:object="${form}" method="POST">
+                    <div class="input-group mb-3 w-50 mx-auto">
+                        <span class="input-group-text">Название</span>
+                        <input type="text" name="name" class="form-control" th:field="*{name}" placeholder="Введите название медиа" required>
+                    </div>
+                    <div class="input-group mb-3 w-50 mx-auto">
+                        <span class="input-group-text">URL Фото</span>
+                        <input type="text" name="photoUrl" class="form-control" th:field="*{photoUrl}" placeholder="Введите URL фото">
+                    </div>
+                    <div class="input-group mb-3 w-50 mx-auto">
+                        <span class="input-group-text">Описание</span>
+                        <textarea name="description" class="form-control" th:field="*{description}" placeholder="Введите описание" rows="3" required></textarea>
+                    </div>
+                    <div class="input-group mb-3 w-50 mx-auto">
+                        <span class="input-group-text">Жанры</span>
+                        <div class="container">
+                            <div class="row">
+                                <div class="col-md-4" th:each="genre : ${genres}">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox"
+                                               th:field="*{genres}"
+                                               th:value="${genre}"
+                                               th:id="${'check-' + genre}">
+                                        <label class="form-check-label"
+                                               th:for="${'check-' + genre}"
+                                               th:text="${genre}">
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary mb-3 w-50">Обновить</button>
+                </form>
+
+            </div>
+            <div th:case="*">
+                <p>Выберите сущность для редиктирования.</p>
+            </div>
+        </th:block>
+    </div>
+</section>
+
+
+<script src="/js/bootstrap.min.js"></script>
+</body>
+</html>

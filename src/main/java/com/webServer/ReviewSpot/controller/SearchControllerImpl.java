@@ -5,6 +5,8 @@ import com.reviewSpot.models.viewmodel.SearchViewModel;
 import com.reviewSpot.models.viewmodel.card.BaseViewModel;
 import com.reviewSpot.models.viewmodel.card.MediaCardViewModel;
 import com.reviewSpot.models.viewmodel.form.media.MediaSearchFormModel;
+import com.webServer.ReviewSpot.dto.GenreOutputDto;
+import com.webServer.ReviewSpot.service.GenreService;
 import com.webServer.ReviewSpot.service.MediaService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -21,10 +23,12 @@ import java.util.stream.Collectors;
 public class SearchControllerImpl implements SearchController {
 
     private final MediaService mediaService;
+    private final GenreService genreService;
 
     @Autowired
-    public SearchControllerImpl(MediaService mediaService) {
+    public SearchControllerImpl(MediaService mediaService, GenreService genreService) {
         this.mediaService = mediaService;
+        this.genreService = genreService;
     }
 
     @Override
@@ -33,8 +37,8 @@ public class SearchControllerImpl implements SearchController {
         var searchQuery = filter.searchQuery() != null ? filter.searchQuery() : "";
         var genres = filter.genres() != null ? filter.genres() : new ArrayList<String>();
         var page = filter.page() != null ? filter.page() : 1;
-        var size = filter.size() != null ? filter.size() : 10;
-        var base = createBaseViewModel("Search", 2, null, null);
+        var size = filter.size() != null ? filter.size() : 5;
+        var base = createBaseViewModel("Search", 2, "Testik", "https://png.pngtree.com/png-vector/20240123/ourlarge/pngtree-cute-little-orange-cat-cute-kitty-png-image_11459046.png");
 
         filter = new MediaSearchFormModel(searchQuery, genres, page, size);
 
@@ -47,6 +51,8 @@ public class SearchControllerImpl implements SearchController {
         var viewModel = new SearchViewModel(base, filter, mediaViewModel, mediaPage.getTotalPages());
 
         model.addAttribute("model", viewModel);
+        model.addAttribute("genres", genreService.findAll().stream().map(GenreOutputDto::getName).toList());
+
         return "search";
     }
 

@@ -1,5 +1,6 @@
 package com.webServer.ReviewSpot.cfg;
 
+import com.github.javafaker.Faker;
 import com.webServer.ReviewSpot.entity.*;
 import com.webServer.ReviewSpot.repository.*;
 import org.springframework.boot.CommandLineRunner;
@@ -7,8 +8,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.*;
+import java.util.stream.Collectors;
 
 //@Component
 @Transactional
@@ -34,25 +35,44 @@ public class Clr implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        // Создаем жанры
-        Genre action = new Genre("Action", new ArrayList<>());
-        Genre drama = new Genre("Drama", new ArrayList<>());
-        genreRepository.save(action);
-        genreRepository.save(drama);
+        String notFound = "https://juststickers.in/wp-content/uploads/2016/12/404-error-not-found-badge.png";
+        Faker faker = new Faker();
 
-        // Создаем медиа
-        Media movie = new Media(
-                "The Matrix",
-                "https://m.media-amazon.com/images/M/MV5BNjAxYjkxNjktYTU0YS00NjFhLWIyMDEtMzEzMTJjMzRkMzQ1XkEyXkFqcGc@._V1_FMjpg_UX1000_.jpg",
-                "A computer programmer discovers a fantastic world...",
-                5,
-                new ArrayList<>(),
-                new ArrayList<>(),
-                Arrays.asList(action, drama)
+        List<String> genreNames = Arrays.asList(
+                "Action", "Drama", "Comedy", "Science Fiction", "Horror",
+                "Fantasy", "Thriller", "Romance", "Adventure", "Documentary",
+                "Animation", "Mystery", "Historical", "Musical", "Western"
         );
-        mediaRepository.save(movie);
 
-        // Создаем клиента
+        List<Genre> genres = genreNames.stream()
+                .map(name -> new Genre(name, new ArrayList<>()))
+                .toList();
+        genres.forEach(genreRepository::save);
+
+
+        Set<String> usedTitles = new HashSet<>();
+        List<Media> movies = new ArrayList<>();
+        for (int i = 0; i < 50; i++) {
+            String title;
+            do {
+                title = faker.book().title();
+            } while (usedTitles.contains(title));
+
+            usedTitles.add(title);
+            Media movie = new Media(
+                    title,
+                    notFound,
+                    faker.lorem().sentence(15),
+                    faker.number().numberBetween(1, 10),
+                    new ArrayList<>(),
+                    new ArrayList<>(),
+                    List.of(genres.get(faker.number().numberBetween(0, genres.size())))
+            );
+            movies.add(movie);
+        }
+
+        movies.forEach(mediaRepository::save);
+
         Client client = new Client(
                 "John Doe",
                 "john@example.com",
@@ -64,10 +84,20 @@ public class Clr implements CommandLineRunner {
         );
         clientRepository.save(client);
 
-        // Создаем комментарий
+        Client client2 = new Client(
+                "Testik",
+                "vladick@gmail.com",
+                "password123",
+                "https://png.pngtree.com/png-vector/20240123/ourlarge/pngtree-cute-little-orange-cat-cute-kitty-png-image_11459046.png",
+                new ArrayList<>(),
+                new ArrayList<>(),
+                new ArrayList<>()
+        );
+        clientRepository.save(client2);
+
         Comment comment = new Comment(
                 client,
-                movie,
+                movies.getFirst(),
                 LocalDateTime.now(),
                 "Great movie!Great movie!Great movie!Great movie!Great movie!Great movie!Great movie!Great movie!Great movie!Great movie!Great movie!Great movie!Great movie!Great movie!Great movie!Great movie!Great movie!Great movie!Great movie!Great movie!Great movie!Great movie!Great movie!Great movie!Great movie!Great movie!"
         );
@@ -76,17 +106,16 @@ public class Clr implements CommandLineRunner {
         for (int i = 0; i < 20; i++) {
             Comment commentNew = new Comment(
                     client,
-                    movie,
+                    movies.getFirst(),
                     LocalDateTime.now(),
                     "Great movie!Great movie!Great movie!Great movie!Great movie!Great movie!Great movie!Great movie!Great movie!Great movie!Great movie!Great movie!Great movie!Great movie!Great movie!Great movie!Great movie!Great movie!Great movie!Great movie!Great movie!Great movie!Great movie!Great movie!Great movie!Great movie!"
             );
             commentRepository.save(commentNew);
         }
 
-        // Создаем обзор
         Review review = new Review(
                 client,
-                movie,
+                movies.getFirst(),
                 LocalDateTime.now(),
                 5,
                 "COMPLETED",
@@ -95,7 +124,6 @@ public class Clr implements CommandLineRunner {
         reviewRepository.save(review);
         System.out.println("Review ID: " + review.getId());
 
-        // Создаем реакцию на комментарий
         Reaction reaction = new Reaction(
                 client,
                 comment,
@@ -103,14 +131,27 @@ public class Clr implements CommandLineRunner {
         );
 
         reactionRepository.save(reaction);
-        var reviewReaction = reactionRepository.findByReviewId(review.getId());
-        var commentReaction = reactionRepository.findByCommentId(comment.getId());
-        System.out.println(reviewReaction.stream().toList());
-        System.out.println(commentReaction.stream().toList());
 
-        // Тестируем поиск
-        System.out.println("Finding media by name: " + mediaRepository.findByName("The Matrix").getName());
-        System.out.println("Finding client by email: " + clientRepository.findByEmail("john@example.com").getName());
-        System.out.println("Finding reviews by media ID: " + reviewRepository.findByMediaId(movie.getId()).size());
+
+        Set<String> usedEmails = new HashSet<>();
+
+        for (int i = 0; i < 50; i++) {
+            String email;
+            do {
+                email = faker.internet().emailAddress();
+            } while (usedEmails.contains(email));
+            usedEmails.add(email);
+
+            Client newClient = new Client(
+                    faker.name().fullName(),
+                    email,
+                    faker.internet().password(8, 20),
+                    notFound,
+                    new ArrayList<>(),
+                    new ArrayList<>(),
+                    new ArrayList<>()
+            );
+            clientRepository.save(newClient);
+        }
     }
 }

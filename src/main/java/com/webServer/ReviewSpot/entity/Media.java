@@ -64,7 +64,7 @@ public class Media extends BaseEntity{
         this.rating = rating;
     }
 
-    @OneToMany(mappedBy = "media")
+    @OneToMany(mappedBy = "media", cascade = CascadeType.REMOVE)
     public List<Comment> getComments() {
         return comments;
     }
@@ -73,7 +73,7 @@ public class Media extends BaseEntity{
         this.comments = comments;
     }
 
-    @OneToMany(mappedBy = "media")
+    @OneToMany(mappedBy = "media", cascade = CascadeType.REMOVE)
     public List<Review> getReviews() {
         return reviews;
     }

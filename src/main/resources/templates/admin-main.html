@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <link href="/css/bootstrap.min.css" rel="stylesheet">
+    <meta charset="UTF-8">
+    <title th:text="${model.title}"></title>
+</head>
+<body class="text-bg-dark">
+<header>
+    <nav class="navbar bg-body-dark">
+        <a href="/" class="navbar-brand fs-2 text-white h1 mx-2">Review Spot</a>
+        <ul class="nav justify-content-end ">
+            <li class="nav-item">
+                <img th:src="${model.clientPhotoUrl}" alt="clientPhoto" width="48" height="48" class="rounded-circle">
+            </li>
+            <li class="nav-item">
+                <a class="nav-link text-white" th:text="${model.clientName}" th:href="@{/client/{id}(id=${model.clientId})}">Link</a>
+            </li>
+        </ul>
+    </nav>
+</header>
+
+<section class="container mt-5" th:if="${successMessage != null or error != null}">
+    <div class="container text-center">
+        <div th:if="${successMessage}" class="alert alert-success w-50 mx-auto" role="alert" th:text="${successMessage}"></div>
+        <div th:if="${error}" class="alert alert-danger w-50 mx-auto" role="alert" th:text="${error}"></div>
+    </div>
+</section>
+
+
+<section class="mt-5 d-flex justify-content-center">
+    <div class="card text-center col-8">
+        <div class="card-header">
+            <ul class="nav nav-tabs card-header-tabs">
+                <li class="nav-item">
+                    <a class="nav-link ${entity == 'client' ? 'active' : ''}" href="/admin/client">Clients</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link ${entity == 'genre' ? 'active' : ''}" href="/admin/genre">Genres</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link ${entity == 'media' ? 'active' : ''}" href="/admin/media">Media</a>
+                </li>
+            </ul>
+        </div>
+        <div class="card-body">
+            <th:block th:switch="${entity}">
+                <div th:case="'client'">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="card-title">Client Management</h5>
+                        <a th:href="@{/admin/create/client}" class="btn btn-sm btn-outline-success">Create Client</a>
+                    </div>
+                    <table class="table">
+                        <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Photo</th>
+                            <th>Name</th>
+                            <th>Comments Count</th>
+                            <th>Reviews Count</th>
+                            <th>Actions</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="client : ${clients.content}">
+                            <td th:text="${client.id}">Client ID</td>
+                            <td>
+                                <a th:href="@{/client/{id}(id=${client.id})}">
+                                    <img th:if="${client.photoUrl != null}"
+                                         th:src="${client.photoUrl}"
+                                         style="width: 50px; height: 50px; object-fit: cover;"
+                                         alt="Client Photo">
+                                </a>
+                                <span th:unless="${client.photoUrl != null}">No Photo</span>
+                            </td>
+                            <td th:text="${client.name}">Client Name</td>
+                            <td th:text="${client.comments != null} ? ${client.comments.size()} : 0">Comments Count</td>
+                            <td th:text="${client.reviews != null} ? ${client.reviews.size()} : 0">Reviews Count</td>
+                            <td>
+                                <a class="btn btn-sm btn-outline-primary" th:href="@{/admin/edit/{id}/client(id=${client.id})}">Edit</a>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                    <form th:action="@{/admin/client}" method="get" th:object="${filter}">
+                        <div class="col-2">
+                            <select class="form-select" name="size">
+                                <option th:value="5" th:text="5" th:selected="${filter.size == 5}"></option>
+                                <option th:value="10" th:text="10" th:selected="${filter.size == 10}"></option>
+                                <option th:value="20" th:text="20" th:selected="${filter.size == 20}"></option>
+                                <option th:value="50" th:text="50" th:selected="${filter.size == 50}"></option>
+                            </select>
+                        </div>
+
+                        <nav aria-label="Client pagination" class="mt-3">
+                            <ul class="pagination pagination-sm justify-content-center">
+                                <li class="page-item" th:classappend="${clients.number == 0} ? 'disabled'">
+                                    <button type="submit" class="page-link" name="page" th:value="${clients.number}">
+                                        Previous
+                                    </button>
+                                </li>
+                                <li class="page-item"
+                                    th:each="pageNumber : ${#numbers.sequence(1, clients.totalPages)}"
+                                    th:classappend="${pageNumber == clients.number + 1} ? 'active'">
+                                    <button type="submit" class="page-link" name="page" th:value="${pageNumber}" th:text="${pageNumber}">
+                                        1
+                                    </button>
+                                </li>
+                                <li class="page-item" th:classappend="${clients.number + 1 == clients.totalPages} ? 'disabled'">
+                                    <button type="submit" class="page-link" name="page" th:value="${clients.number + 2}">
+                                        Next
+                                    </button>
+                                </li>
+                            </ul>
+                        </nav>
+                    </form>
+                </div>
+                <div th:case="'genre'">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="card-title">Genre Management</h5>
+                        <a th:href="@{/admin/create/genre}" class="btn btn-sm btn-outline-success">Create Genre</a>
+                    </div>
+                    <table class="table">
+                        <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Actions</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="genre : ${genres}">
+                            <td th:text="${genre.id}">Genre ID</td>
+                            <td th:text="${genre.name}">Genre name</td>
+                            <td>
+                                <form th:action="@{/admin/edit/{id}/genre(id=${genre.id})}">
+                                    <input type="hidden" name="id" th:value="${genre.id}">
+                                    <button type="submit" class="btn btn-sm btn-outline-primary">Edit</button>
+                                </form>
+                                <form th:action="@{/admin/delete/{id}/genre(id=${genre.id})}" method="post"
+                                      onsubmit="return confirm('Вы уверены, что хотите удалить этот жанр?');">
+                                    <input type="hidden" name="id" th:value="${genre.id}">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+                                </form>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                    <form th:action="@{/admin/genre}" method="get" th:object="${filter}">
+                        <div class="col-2">
+                            <select class="form-select" name="size">
+                                <option th:value="5" th:text="5" th:selected="${filter.size == 5}"></option>
+                                <option th:value="10" th:text="10" th:selected="${filter.size == 10}"></option>
+                                <option th:value="20" th:text="20" th:selected="${filter.size == 20}"></option>
+                                <option th:value="50" th:text="50" th:selected="${filter.size == 50}"></option>
+                            </select>
+                        </div>
+
+                        <nav aria-label="Genre pagination" class="mt-3">
+                            <ul class="pagination pagination-sm justify-content-center">
+                                <li class="page-item" th:classappend="${genres.number == 0} ? 'disabled'">
+                                    <button type="submit" class="page-link" name="page" th:value="${genres.number}">
+                                        Previous
+                                    </button>
+                                </li>
+                                <li class="page-item"
+                                    th:each="pageNumber : ${#numbers.sequence(1, genres.totalPages)}"
+                                    th:classappend="${pageNumber == genres.number + 1} ? 'active'">
+                                    <button type="submit" class="page-link" name="page" th:value="${pageNumber}" th:text="${pageNumber}">
+                                        1
+                                    </button>
+                                </li>
+                                <li class="page-item" th:classappend="${genres.number + 1 == genres.totalPages} ? 'disabled'">
+                                    <button type="submit" class="page-link" name="page" th:value="${genres.number + 2}">
+                                        Next
+                                    </button>
+                                </li>
+                            </ul>
+                        </nav>
+                    </form>
+
+                </div>
+                <div th:case="'media'">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="card-title">Media Management</h5>
+                        <a th:href="@{/admin/create/media}" class="btn btn-sm btn-outline-success">Create Media</a>
+                    </div>
+                    <table class="table">
+                        <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Photo</th>
+                            <th>Title</th>
+                            <th>Description</th>
+                            <th>Genres</th>
+                            <th>Rating</th>
+                            <th>Actions</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="mediaItem : ${media.content}">
+                            <td th:text="${mediaItem.id}">Media ID</td>
+                            <td>
+                                <a th:href="@{/media/{id}(id=${mediaItem.id})}">
+                                    <img th:if="${mediaItem.mediaPhotoUrl != null}"
+                                         th:src="${mediaItem.mediaPhotoUrl}"
+                                         style="width: 50px; height: 50px; object-fit: cover;"
+                                         alt="Media Photo">
+                                    <span th:unless="${mediaItem.mediaPhotoUrl != null}">No Photo</span>
+                                </a>
+                            </td>
+                            <td th:text="${mediaItem.name}">Media Title</td>
+                            <td th:text="${mediaItem.description}">Description</td>
+                            <td th:text="${#strings.listJoin(mediaItem.genres, ', ')}"></td>
+                            <td th:text="${mediaItem.rating}">Rating</td>
+                            <td>
+                                <form th:action="@{/admin/edit/{id}/media(id=${mediaItem.id})}">
+                                    <input type="hidden" name="id" th:value="${mediaItem.id}">
+                                    <button type="submit" class="btn btn-sm btn-outline-primary">Edit</button>
+                                </form>
+                                <form th:action="@{/admin/delete/{id}/media(id=${mediaItem.id})}" method="post">
+                                    <input type="hidden" name="id" th:value="${mediaItem.id}">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+                                </form>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+
+                    <form th:action="@{/admin/media}" method="get" th:object="${filter}">
+                        <div class="col-2">
+                            <select class="form-select" name="size">
+                                <option th:value="5" th:text="5" th:selected="${filter.size == 5}"></option>
+                                <option th:value="10" th:text="10" th:selected="${filter.size == 10}"></option>
+                                <option th:value="20" th:text="20" th:selected="${filter.size == 20}"></option>
+                                <option th:value="50" th:text="50" th:selected="${filter.size == 50}"></option>
+                            </select>
+                        </div>
+
+                        <nav aria-label="Media pagination" class="mt-3">
+                            <ul class="pagination pagination-sm justify-content-center">
+                                <li class="page-item" th:classappend="${media.number == 0} ? 'disabled'">
+                                    <button type="submit" class="page-link" name="page" th:value="${media.number}">
+                                        Previous
+                                    </button>
+                                </li>
+                                <li class="page-item"
+                                    th:each="pageNumber : ${#numbers.sequence(1, media.totalPages)}"
+                                    th:classappend="${pageNumber == media.number + 1} ? 'active'">
+                                    <button type="submit" class="page-link" name="page" th:value="${pageNumber}" th:text="${pageNumber}">
+                                        1
+                                    </button>
+                                </li>
+                                <li class="page-item" th:classappend="${media.number + 1 == media.totalPages} ? 'disabled'">
+                                    <button type="submit" class="page-link" name="page" th:value="${media.number + 2}">
+                                        Next
+                                    </button>
+                                </li>
+                            </ul>
+                        </nav>
+                    </form>
+                </div>
+                <div th:case="*">
+                    <h5 class="card-title">Admin Panel</h5>
+                    <p class="card-text">Select an entity to manage</p>
+                </div>
+            </th:block>
+        </div>
+    </div>
+</section>
+<script src="/js/bootstrap.min.js"></script>
+</body>
+</html>
