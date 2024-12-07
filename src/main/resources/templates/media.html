@@ -146,28 +146,28 @@
             </div>
         </div>
     </div>
-    <form th:action="@{/media/{id}(id=${model.mediaInfo.mediaId})}" method="get">
-        <input type="hidden" name="commentFilter.page" th:value="${commentFilter.page}" />
-        <input type="hidden" name="commentFilter.size" th:value="${commentFilter.size}" />
+    <form th:action="@{/media/{id}(id=${model.mediaInfo.mediaId})}" method="get" th:object="${commentForm}">
+        <input type="hidden" name="commentPage" th:value="${commentForm.commentPage}" />
+        <input type="hidden" name="commentSize" th:value="${commentForm.commentSize}" />
 
         <nav aria-label="Reviews pagination" th:if="${not #lists.isEmpty(model.lastReviews)}" class="mt-3">
             <ul class="pagination pagination-sm justify-content-center">
-                <li class="page-item" th:classappend="${model.lastReviews[0].currentPage == 1} ? 'disabled'">
-                    <button type="submit" class="page-link" name="reviewFilter.page" th:value="${model.lastReviews[0].currentPage - 1}">
+                <li class="page-item" th:classappend="${reviewForm.reviewPage == 1} ? 'disabled'">
+                    <button type="submit" class="page-link" name="reviewPage" th:value="${reviewForm.reviewPage - 1}">
                         Previous
                     </button>
                 </li>
 
                 <li class="page-item"
-                    th:each="pageNumber : ${#numbers.sequence(1, model.lastReviews[0].totalPages)}"
-                    th:classappend="${pageNumber == model.lastReviews[0].currentPage} ? 'active'">
-                    <button type="submit" class="page-link" name="reviewFilter.page" th:value="${pageNumber}" th:text="${pageNumber}">
+                    th:each="pageNumber : ${#numbers.sequence(1, model.reviewTotalPages)}"
+                    th:classappend="${pageNumber == reviewForm.reviewPage} ? 'active'">
+                    <button type="submit" class="page-link" name="reviewPage" th:value="${pageNumber}" th:text="${pageNumber}">
                         1
                     </button>
                 </li>
 
-                <li class="page-item" th:classappend="${model.lastReviews[0].currentPage == model.lastReviews[0].totalPages} ? 'disabled'">
-                    <button type="submit" class="page-link" name="reviewFilter.page" th:value="${model.lastReviews[0].currentPage + 1}">
+                <li class="page-item" th:classappend="${reviewForm.reviewPage == model.reviewTotalPages} ? 'disabled'">
+                    <button type="submit" class="page-link" name="reviewPage" th:value="${reviewForm.reviewPage + 1}">
                         Next
                     </button>
                 </li>
@@ -325,28 +325,28 @@
         </div>
     </div>
 
-    <form th:action="@{/media/{id}(id=${model.mediaInfo.mediaId})}" method="get">
-        <input type="hidden" name="reviewFilter.page" th:value="${reviewFilter.page}" />
-        <input type="hidden" name="reviewFilter.size" th:value="${reviewFilter.size}" />
+    <form th:action="@{/media/{id}(id=${model.mediaInfo.mediaId})}" method="get" th:object="${reviewForm}">
+        <input type="hidden" name="reviewPage" th:value="${reviewForm.reviewPage}" />
+        <input type="hidden" name="reviewSize" th:value="${reviewForm.reviewSize}" />
 
         <nav aria-label="Comments pagination" th:if="${not #lists.isEmpty(model.lastComments)}" class="mt-3">
             <ul class="pagination pagination-sm justify-content-center">
-                <li class="page-item" th:classappend="${model.lastComments[0].currentPage == 1} ? 'disabled'">
-                    <button type="submit" class="page-link" name="commentFilter.page" th:value="${model.lastComments[0].currentPage - 1}">
+                <li class="page-item" th:classappend="${commentForm.commentPage == 1} ? 'disabled'">
+                    <button type="submit" class="page-link" name="commentPage" th:value="${commentForm.commentPage - 1}">
                         Previous
                     </button>
                 </li>
 
                 <li class="page-item"
-                    th:each="pageNumber : ${#numbers.sequence(1, model.lastComments[0].totalPages)}"
-                    th:classappend="${pageNumber == model.lastComments[0].currentPage} ? 'active'">
-                    <button type="submit" class="page-link" name="commentFilter.page" th:value="${pageNumber}" th:text="${pageNumber}">
+                    th:each="pageNumber : ${#numbers.sequence(1, model.commentTotalPages)}"
+                    th:classappend="${pageNumber == commentForm.commentPage} ? 'active'">
+                    <button type="submit" class="page-link" name="commentPage" th:value="${pageNumber}" th:text="${pageNumber}">
                         1
                     </button>
                 </li>
 
-                <li class="page-item" th:classappend="${model.lastComments[0].currentPage == model.lastComments[0].totalPages} ? 'disabled'">
-                    <button type="submit" class="page-link" name="commentFilter.page" th:value="${model.lastComments[0].currentPage + 1}">
+                <li class="page-item" th:classappend="${commentForm.commentPage == model.commentTotalPages} ? 'disabled'">
+                    <button type="submit" class="page-link" name="commentPage" th:value="${commentForm.commentPage + 1}">
                         Next
                     </button>
                 </li>

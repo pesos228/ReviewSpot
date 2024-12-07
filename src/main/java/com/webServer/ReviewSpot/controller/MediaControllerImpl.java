@@ -6,9 +6,7 @@ import com.reviewSpot.models.viewmodel.card.BaseViewModel;
 import com.reviewSpot.models.viewmodel.card.CommentCardViewModel;
 import com.reviewSpot.models.viewmodel.card.MediaCardViewModel;
 import com.reviewSpot.models.viewmodel.card.ReviewCardViewModel;
-import com.reviewSpot.models.viewmodel.form.comment.CommentFormModel;
 import com.reviewSpot.models.viewmodel.form.comment.CommentPageFormModel;
-import com.reviewSpot.models.viewmodel.form.review.ReviewFormModel;
 import com.reviewSpot.models.viewmodel.form.review.ReviewPageFormModel;
 import com.webServer.ReviewSpot.service.CommentService;
 import com.webServer.ReviewSpot.service.MediaService;
@@ -40,14 +38,17 @@ public class MediaControllerImpl implements MediaController {
 
     @Override
     @GetMapping("/{id}")
-    public String mediaPage(@RequestParam(name = "commentFilter.page", required = false, defaultValue = "1") Integer commentPage,
-                            @RequestParam(name = "commentFilter.size", required = false, defaultValue = "3") Integer commentSize,
-                            @RequestParam(name = "reviewFilter.page", required = false, defaultValue = "1") Integer reviewPage,
-                            @RequestParam(name = "reviewFilter.size", required = false, defaultValue = "4") Integer reviewSize,
+    public String mediaPage(@ModelAttribute("commentForm") CommentPageFormModel commentForm,
+                            @ModelAttribute("reviewForm") ReviewPageFormModel reviewForm,
                             @PathVariable int id, Model model){
+        var commentPage = commentForm.commentPage() != null ? commentForm.commentPage() : 1;
+        var commentSize = commentForm.commentSize() != null ? commentForm.commentSize() : 3;
+        var reviewPage = reviewForm.reviewPage() != null ? reviewForm.reviewPage() : 1;
+        var reviewSize = reviewForm.reviewSize() != null ? reviewForm.reviewSize() : 3;
 
-        var commentFilter = new CommentPageFormModel(commentPage, commentSize);
-        var reviewFilter = new ReviewPageFormModel(reviewPage, reviewSize);
+        commentForm = new CommentPageFormModel(commentPage, commentSize);
+        reviewForm = new ReviewPageFormModel(reviewPage, reviewSize);
+
         var base = createBaseViewModel("Media page", 2, "Testik", "https://png.pngtree.com/png-vector/20240123/ourlarge/pngtree-cute-little-orange-cat-cute-kitty-png-image_11459046.png");
         var media = mediaService.findById(id);
         MediaCardViewModel mediaCard = new MediaCardViewModel(media.getId(), media.getName(), media.getPhotoUrl(), media.getDescription(), media.getGenre(), media.getRating());
@@ -58,17 +59,17 @@ public class MediaControllerImpl implements MediaController {
         List<CommentCardViewModel> commentsCard = comments.stream().map(comment -> new CommentCardViewModel(comment.getId(), comment.getClientName(), comment.getClientPhotoUrl(), comment.getClientId(),
                 comment.getMediaName(), comment.getMediaId(), comment.getText(), comment.getDateTime(), comment.getLikeCount(), comment.getDislikeCount(),
                 reactionService.isLike(base.clientId(), comment.getId(), "COMMENT"), reactionService.isDislike(base.clientId(),
-                comment.getId(), "COMMENT"), comments.getNumber() + 1, comments.getTotalPages())).toList();
+                comment.getId(), "COMMENT"))).toList();
 
         List<ReviewCardViewModel> reviewsCard = reviews.stream().map(review -> new ReviewCardViewModel(review.getId(), review.getClientName(), review.getClientPhotoUrl(), review.getClientId(), review.getMediaName(), review.getMediaId(),
-                review.getMediaPhotoUrl(), review.getRating(), review.getWatchStatus().toString(), review.getText(), review.getDateTime(), review.getLikeCount(), review.getDislikeCount(),
-                reactionService.isLike(base.clientId(), review.getId(), "REVIEW"), reactionService.isDislike(base.clientId(), review.getId(), "REVIEW"), reviews.getNumber() +1, reviews.getTotalPages())).toList();
+                review.getMediaPhotoUrl(), review.getRating(), review.getWatchStatus(), review.getText(), review.getDateTime(), review.getLikeCount(), review.getDislikeCount(),
+                reactionService.isLike(base.clientId(), review.getId(), "REVIEW"), reactionService.isDislike(base.clientId(), review.getId(), "REVIEW"))).toList();
 
-        MediaViewModel mediaViewModel = new MediaViewModel(base, mediaCard, reviewsCard, commentsCard);
+        MediaViewModel mediaViewModel = new MediaViewModel(base, mediaCard, reviewsCard, commentsCard, comments.getTotalPages(), reviews.getTotalPages());
 
         model.addAttribute("model", mediaViewModel);
-        model.addAttribute("commentFilter", commentFilter);
-        model.addAttribute("reviewFilter", reviewFilter);
+        model.addAttribute("commentForm", commentForm);
+        model.addAttribute("reviewForm", reviewForm);
         return "media";
     }
 

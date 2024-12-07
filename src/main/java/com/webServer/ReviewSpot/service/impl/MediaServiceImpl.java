@@ -140,13 +140,11 @@ public class MediaServiceImpl implements MediaService {
         Pageable pageable = PageRequest.of(page - 1, size, Sort.by("name"));
 
         if (searchQuery.isBlank() && genres.isEmpty()){
-            return mediaRepository.findAll(pageable).map(media -> new MediaCardDto(media.getId(), media.getName(), media.getPhotoUrl(),
-                    media.getDescription(), media.getGenreList().stream().map(Genre::getName).collect(Collectors.toList()), media.getRating()));
+            return mediaRepository.findAll(pageable).map(media -> modelMapper.map(media, MediaCardDto.class));
         }
 
         if (!searchQuery.isBlank() && genres.isEmpty()){
-            return mediaRepository.findByNameContaining(searchQuery, pageable).map(media -> new MediaCardDto(media.getId(), media.getName(),
-                    media.getPhotoUrl(), media.getDescription(), media.getGenreList().stream().map(Genre::getName).collect(Collectors.toList()), media.getRating()));
+            return mediaRepository.findByNameContaining(searchQuery, pageable).map(media -> modelMapper.map(media, MediaCardDto.class));
         }
 
         List<Genre> genreList = new ArrayList<>();
@@ -159,11 +157,9 @@ public class MediaServiceImpl implements MediaService {
         }
 
         if (searchQuery.isBlank() && !genres.isEmpty()){
-            return mediaRepository.findByGenres(genreList, pageable).map(media -> new MediaCardDto(media.getId(), media.getName(), media.getPhotoUrl(),
-                    media.getDescription(), media.getGenreList().stream().map(Genre::getName).collect(Collectors.toList()), media.getRating()));
+            return mediaRepository.findByGenres(genreList, pageable).map(media -> modelMapper.map(media, MediaCardDto.class));
         }
-        return mediaRepository.findByNameContainingAndByGenres(searchQuery, genreList, pageable).map(media -> new MediaCardDto(media.getId(), media.getName(), media.getPhotoUrl(),
-                media.getDescription(), media.getGenreList().stream().map(Genre::getName).collect(Collectors.toList()), media.getRating()));
+        return mediaRepository.findByNameContainingAndByGenres(searchQuery, genreList, pageable).map(media -> modelMapper.map(media, MediaCardDto.class));
     }
 
     @Override
@@ -171,8 +167,7 @@ public class MediaServiceImpl implements MediaService {
         Pageable pageable = PageRequest.of(page - 1, size);
         var mediaAll = mediaRepository.findAll(pageable);
 
-        return mediaAll.map(media -> new MediaCardDto(media.getId(), media.getName(), media.getPhotoUrl(),
-                media.getDescription(), media.getGenreList().stream().map(Genre::getName).collect(Collectors.toList()), media.getRating()));
+        return mediaAll.map(media -> modelMapper.map(media, MediaCardDto.class));
     }
 
     @Override

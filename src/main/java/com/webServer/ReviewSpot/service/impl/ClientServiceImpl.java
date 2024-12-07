@@ -62,7 +62,7 @@ public class ClientServiceImpl implements ClientService {
         if (client == null){
             throw  new ClientNotFoundException("Client with id: " + id + " not found2");
         }
-        return new ClientInfoDto(client.getId(), client.getName(), client.getPhotoUrl(), commentService.findByClientId(id), reviewService.findByClientId(id));
+        return modelMapper.map(client, ClientInfoDto.class);
 
     }
 
@@ -112,9 +112,7 @@ public class ClientServiceImpl implements ClientService {
         Pageable pageable = PageRequest.of(page - 1, size);
         var clients = clientRepository.findAll(pageable);
 
-        return clients.map(client -> new ClientInfoDto(client.getId(), client.getName(), client.getPhotoUrl(),
-                commentService.findByClientId(client.getId()),
-                reviewService.findByClientId(client.getId())));
+        return clients.map(client -> modelMapper.map(client, ClientInfoDto.class));
 
     }
 }

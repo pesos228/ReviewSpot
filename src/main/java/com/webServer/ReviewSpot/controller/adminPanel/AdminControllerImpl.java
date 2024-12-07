@@ -1,6 +1,7 @@
 package com.webServer.ReviewSpot.controller.adminPanel;
 
 import com.reviewSpot.models.controllers.adminPanel.AdminController;
+import com.reviewSpot.models.viewmodel.AdminViewModelEntityList;
 import com.reviewSpot.models.viewmodel.card.BaseViewModel;
 import com.reviewSpot.models.viewmodel.form.client.ClientPageFormModel;
 import com.reviewSpot.models.viewmodel.form.genre.GenrePageFormModel;
@@ -33,59 +34,53 @@ public class AdminControllerImpl implements AdminController {
     @Override
     @GetMapping
     public String adminPanel(Model model) {
-        var base = createBaseViewModel("Admin panel", 2, "Testik", "https://png.pngtree.com/png-vector/20240123/ourlarge/pngtree-cute-little-orange-cat-cute-kitty-png-image_11459046.png");
-        model.addAttribute("model", base);
+        model.addAttribute("model", new AdminViewModelEntityList<>(createBaseViewModel("Admin panel", 2, "Testik", "https://png.pngtree.com/png-vector/20240123/ourlarge/pngtree-cute-little-orange-cat-cute-kitty-png-image_11459046.png"),
+                null, null, null, 0));
         return "admin-main";
     }
 
     @Override
     @GetMapping("/client")
-    public String adminPanelClient(@ModelAttribute("filter") ClientPageFormModel filter, Model model) {
-        var page = filter.page() != null ? filter.page() : 1;
-        var size = filter.size() != null ? filter.size() : 10;
-        filter = new ClientPageFormModel(page, size);
-        var base = createBaseViewModel("Admin panel", 2, "Testik", "https://png.pngtree.com/png-vector/20240123/ourlarge/pngtree-cute-little-orange-cat-cute-kitty-png-image_11459046.png");
+    public String adminPanelClient(@ModelAttribute("clientForm") ClientPageFormModel clientForm, Model model) {
+        var page = clientForm.clientPage() != null ? clientForm.clientPage() : 1;
+        var size = clientForm.clientSize() != null ? clientForm.clientSize() : 10;
+        clientForm = new ClientPageFormModel(page, size);
         var clients = clientService.findAll(page, size);
 
-        model.addAttribute("model", base);
-        model.addAttribute("clients", clients);
-        model.addAttribute("filter", filter);
-        model.addAttribute("entity", "client");
+        var viewModel = new AdminViewModelEntityList<>(createBaseViewModel("Admin panel", 2, "Testik", "https://png.pngtree.com/png-vector/20240123/ourlarge/pngtree-cute-little-orange-cat-cute-kitty-png-image_11459046.png"),
+                clients.stream().toList(), clientForm, "client", clients.getTotalPages());
+
+        model.addAttribute("model", viewModel);
         return "admin-main";
     }
 
     @Override
     @GetMapping("/genre")
-    public String adminPanelGenre(@ModelAttribute("filter") GenrePageFormModel filter, Model model) {
-        var page = filter.page() != null ? filter.page() : 1;
-        var size = filter.size() != null ? filter.size() : 5;
-        filter = new GenrePageFormModel(page, size);
-
-        var base = createBaseViewModel("Admin panel", 2, "Testik", "https://png.pngtree.com/png-vector/20240123/ourlarge/pngtree-cute-little-orange-cat-cute-kitty-png-image_11459046.png");
+    public String adminPanelGenre(@ModelAttribute("genreForm") GenrePageFormModel genreForm, Model model) {
+        var page = genreForm.genrePage() != null ? genreForm.genrePage() : 1;
+        var size = genreForm.genreSize() != null ? genreForm.genreSize() : 5;
+        genreForm = new GenrePageFormModel(page, size);
         var genres = genreService.findAll(page, size);
 
+        var viewModel = new AdminViewModelEntityList<>(createBaseViewModel("Admin panel", 2, "Testik", "https://png.pngtree.com/png-vector/20240123/ourlarge/pngtree-cute-little-orange-cat-cute-kitty-png-image_11459046.png"),
+                genres.stream().toList(), genreForm, "genre", genres.getTotalPages());
 
-
-        model.addAttribute("model", base);
-        model.addAttribute("genres", genres);
-        model.addAttribute("filter", filter);
-        model.addAttribute("entity", "genre");
+        model.addAttribute("model", viewModel);
         return "admin-main";
     }
 
     @Override
     @GetMapping("/media")
-    public String adminPanelMedia(@ModelAttribute("filter")MediaPageFormModel filter, Model model) {
-        var page = filter.page() != null ? filter.page() : 1;
-        var size = filter.size() != null ? filter.size() : 10;
-        filter = new MediaPageFormModel(page, size);
-        var base = createBaseViewModel("Admin panel", 2, "Testik", "https://png.pngtree.com/png-vector/20240123/ourlarge/pngtree-cute-little-orange-cat-cute-kitty-png-image_11459046.png");
-        var media = mediaService.findAll(page, size);
+    public String adminPanelMedia(@ModelAttribute("mediaForm") MediaPageFormModel mediaForm, Model model) {
+        var page = mediaForm.mediaPage() != null ? mediaForm.mediaPage() : 1;
+        var size = mediaForm.mediaSize() != null ? mediaForm.mediaSize() : 10;
+        mediaForm = new MediaPageFormModel(page, size);
+        var medias = mediaService.findAll(page, size);
 
-        model.addAttribute("model", base);
-        model.addAttribute("media", media);
-        model.addAttribute("filter", filter);
-        model.addAttribute("entity", "media");
+        var viewModel = new AdminViewModelEntityList<>(createBaseViewModel("Admin panel", 2, "Testik", "https://png.pngtree.com/png-vector/20240123/ourlarge/pngtree-cute-little-orange-cat-cute-kitty-png-image_11459046.png"),
+                medias.stream().toList(), mediaForm, "media", medias.getTotalPages());
+
+        model.addAttribute("model", viewModel);
         return "admin-main";
     }
 

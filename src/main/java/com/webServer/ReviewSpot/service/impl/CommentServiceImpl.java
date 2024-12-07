@@ -35,12 +35,15 @@ public class CommentServiceImpl implements CommentService {
     private final ReactionRepository reactionRepository;
     private final MediaRepository mediaRepository;
     private final ClientRepository clientRepository;
+    private final ModelMapper modelMapper;
+
     @Autowired
-    public CommentServiceImpl(CommentRepository commentRepository, ReactionRepository reactionRepository, MediaRepository mediaRepository, ClientRepository clientRepository) {
+    public CommentServiceImpl(CommentRepository commentRepository, ReactionRepository reactionRepository, MediaRepository mediaRepository, ClientRepository clientRepository, ModelMapper modelMapper) {
         this.commentRepository = commentRepository;
         this.reactionRepository = reactionRepository;
         this.mediaRepository = mediaRepository;
         this.clientRepository = clientRepository;
+        this.modelMapper = modelMapper;
     }
 
     @Override
@@ -67,7 +70,7 @@ public class CommentServiceImpl implements CommentService {
 
         List<Comment> comments = commentRepository.findByClientId(id);
 
-        return createCommentOutputDto(comments);
+        return comments.stream().map(comment -> modelMapper.map(comment, CommentOutputDto.class)).toList();
     }
 
     @Override
@@ -78,7 +81,7 @@ public class CommentServiceImpl implements CommentService {
         }
         var comments = commentRepository.findByClientIdAfterDate(id, date);
 
-        return createCommentOutputDto(comments);
+        return comments.stream().map(comment -> modelMapper.map(comment, CommentOutputDto.class)).toList();
     }
 
     @Override
@@ -89,7 +92,7 @@ public class CommentServiceImpl implements CommentService {
         }
         var comments = commentRepository.findByMediaIdAfterDate(id, date);
 
-        return createCommentOutputDto(comments);
+        return comments.stream().map(comment -> modelMapper.map(comment, CommentOutputDto.class)).toList();
     }
 
     @Override
@@ -101,7 +104,7 @@ public class CommentServiceImpl implements CommentService {
 
         List<Comment> comments = commentRepository.findByMediaId(id);
 
-        return createCommentOutputDto(comments);
+        return comments.stream().map(comment -> modelMapper.map(comment, CommentOutputDto.class)).toList();
     }
 
     @Override
@@ -112,7 +115,7 @@ public class CommentServiceImpl implements CommentService {
         }
 
         var comments = commentRepository.getLastCommentsByClientId(id, count);
-        return createCommentOutputDto(comments);
+        return comments.stream().map(comment -> modelMapper.map(comment, CommentOutputDto.class)).toList();
     }
 
     @Override
@@ -125,23 +128,7 @@ public class CommentServiceImpl implements CommentService {
 
         var comments = commentRepository.getLastCommentsByClientId(id, pageable);
 
-        return comments.map(comment -> {
-            List<Reaction> reactions = reactionRepository.findByCommentId(comment.getId());
-            int likeCount = 0;
-            int dislikeCount = 0;
-            for (Reaction reaction: reactions){
-                if (reaction.getLike()){
-                    likeCount++;
-                }
-                else{
-                    dislikeCount++;
-                }
-
-            }
-
-            return new CommentOutputDto(comment.getClient().getId(), comment.getMedia().getId(), comment.getText(), comment.getId(),
-                    comment.getClient().getName(), comment.getClient().getPhotoUrl(), comment.getMedia().getName(), comment.getDateTime(), likeCount, dislikeCount);
-        });
+        return comments.map(comment -> modelMapper.map(comment, CommentOutputDto.class));
     }
 
     @Override
@@ -154,22 +141,7 @@ public class CommentServiceImpl implements CommentService {
 
         var comments = commentRepository.getLastCommentsByMediaId(id, pageable);
 
-        return comments.map(comment -> {
-            List<Reaction> reactions = reactionRepository.findByCommentId(comment.getId());
-            int likeCount = 0;
-            int dislikeCount = 0;
-            for (Reaction reaction: reactions){
-                if (reaction.getLike()){
-                    likeCount++;
-                }else{
-                    dislikeCount++;
-                }
-
-            }
-
-            return new CommentOutputDto(comment.getClient().getId(), comment.getMedia().getId(), comment.getText(), comment.getId(),
-                    comment.getClient().getName(), comment.getClient().getPhotoUrl(), comment.getMedia().getName(), comment.getDateTime(), likeCount, dislikeCount);
-        });
+        return comments.map(comment -> modelMapper.map(comment, CommentOutputDto.class));
     }
 
     @Override
@@ -181,29 +153,5 @@ public class CommentServiceImpl implements CommentService {
         }
 
         commentRepository.deleteById(id);
-    }
-
-    private List<CommentOutputDto> createCommentOutputDto(List<Comment> comments){
-        List<CommentOutputDto> commentOutputDtos = new ArrayList<>();
-        for (Comment comment: comments){
-            List<Reaction> reactions = reactionRepository.findByCommentId(comment.getId());
-            int likeCount = 0;
-            int dislikeCount = 0;
-            for (Reaction reaction: reactions){
-                if (reaction.getLike()){
-                    likeCount++;
-                }
-                if (!reaction.getLike()){
-                    dislikeCount++;
-                }
-            }
-
-            CommentOutputDto commentOutputDto = new CommentOutputDto(comment.getClient().getId(), comment.getMedia().getId(), comment.getText(), comment.getId(),
-                    comment.getClient().getName(), comment.getClient().getPhotoUrl(), comment.getMedia().getName(), comment.getDateTime(), likeCount, dislikeCount);
-
-            commentOutputDtos.add(commentOutputDto);
-        }
-
-        return commentOutputDtos;
     }
 }

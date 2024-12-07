@@ -15,6 +15,7 @@ import com.webServer.ReviewSpot.repository.MediaRepository;
 import com.webServer.ReviewSpot.repository.ReactionRepository;
 import com.webServer.ReviewSpot.repository.ReviewRepository;
 import com.webServer.ReviewSpot.service.ReviewService;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -34,13 +35,15 @@ public class ReviewServiceImpl implements ReviewService {
     private final ClientRepository clientRepository;
     private final MediaRepository mediaRepository;
     private final ReactionRepository reactionRepository;
+    private final ModelMapper modelMapper;
 
     @Autowired
-    public ReviewServiceImpl(ReviewRepository reviewRepository, ClientRepository clientRepository, MediaRepository mediaRepository, ReactionRepository reactionRepository) {
+    public ReviewServiceImpl(ReviewRepository reviewRepository, ClientRepository clientRepository, MediaRepository mediaRepository, ReactionRepository reactionRepository, ModelMapper modelMapper) {
         this.reviewRepository = reviewRepository;
         this.clientRepository = clientRepository;
         this.mediaRepository = mediaRepository;
         this.reactionRepository = reactionRepository;
+        this.modelMapper = modelMapper;
     }
 
     @Override
@@ -70,7 +73,7 @@ public class ReviewServiceImpl implements ReviewService {
         reviewRatingList.add(reviewInputDto.getRating());
         media.updateRating(reviewRatingList);
 
-        Review review = new Review(client, media, LocalDateTime.now(), reviewInputDto.getRating(), reviewInputDto.getWatchStatus().toString(), reviewInputDto.getText());
+        Review review = new Review(client, media, LocalDateTime.now(), reviewInputDto.getRating(), reviewInputDto.getWatchStatus(), reviewInputDto.getText());
         reviewRepository.save(review);
 
         mediaRepository.save(media);
@@ -79,8 +82,7 @@ public class ReviewServiceImpl implements ReviewService {
     @Override
     public ReviewOutputDto findById(int id) {
         Review review = reviewRepository.findById(id);
-        var reviewOutputDtoList = createReviewOutputDto(new ArrayList<>(Collections.singleton(review)));
-        return reviewOutputDtoList.getFirst();
+        return modelMapper.map(review, ReviewOutputDto.class);
     }
 
     @Override
@@ -113,7 +115,7 @@ public class ReviewServiceImpl implements ReviewService {
         }
         List<Review> reviews = reviewRepository.findByMediaId(id);
 
-        return createReviewOutputDto(reviews);
+        return reviews.stream().map(review -> modelMapper.map(review, ReviewOutputDto.class)).toList();
     }
 
     @Override
@@ -124,19 +126,19 @@ public class ReviewServiceImpl implements ReviewService {
         }
         List<Review> reviews = reviewRepository.findByClientId(id);
 
-        return createReviewOutputDto(reviews);
+        return reviews.stream().map(review -> modelMapper.map(review, ReviewOutputDto.class)).toList();
     }
 
     @Override
     public List<ReviewOutputDto> findByClientIdAfterDate(int id, LocalDateTime date) {
         var reviews = reviewRepository.findByClientIdAfterDate(id, date);
-        return createReviewOutputDto(reviews);
+        return reviews.stream().map(review -> modelMapper.map(review, ReviewOutputDto.class)).toList();
     }
 
     @Override
     public List<ReviewOutputDto> findByMediaIdAfterDate(int id, LocalDateTime date) {
         var reviews = reviewRepository.findByMediaIdAfterDate(id, date);
-        return createReviewOutputDto(reviews);
+        return reviews.stream().map(review -> modelMapper.map(review, ReviewOutputDto.class)).toList();
     }
 
     @Override
@@ -146,7 +148,7 @@ public class ReviewServiceImpl implements ReviewService {
             throw new ClientNotFoundException("Client with id: " + id + " not found3");
         }
         var reviews = reviewRepository.getLastReviewsByClientId(id, count);
-        return createReviewOutputDto(reviews);
+        return reviews.stream().map(review -> modelMapper.map(review, ReviewOutputDto.class)).toList();
     }
 
     @Override
@@ -158,22 +160,7 @@ public class ReviewServiceImpl implements ReviewService {
         }
 
         var reviews = reviewRepository.getReviewsByMediaId(id, pageable);
-        return reviews.map(review -> {
-            List<Reaction> reactions = reactionRepository.findByReviewId(review.getId());
-            int likeCount = 0;
-            int dislikeCount = 0;
-            for (Reaction reaction: reactions){
-                if (reaction.getLike()){
-                    likeCount++;
-                }else{
-                    dislikeCount++;
-                }
-            }
-
-            return new ReviewOutputDto(review.getClient().getId(), review.getMedia().getId(), review.getRating(),
-                    review.getWatchStatus().toUpperCase(), review.getText(), review.getClient().getName(), review.getClient().getPhotoUrl(), review.getMedia().getName(), review.getMedia().getPhotoUrl(),
-                    review.getId(), review.getDateTime(), likeCount, dislikeCount);
-        });
+        return reviews.map(review -> modelMapper.map(review, ReviewOutputDto.class));
     }
 
     @Override
@@ -185,21 +172,7 @@ public class ReviewServiceImpl implements ReviewService {
         }
 
         var reviews = reviewRepository.getReviewsByClientId(id, pageable);
-        return reviews.map(review -> {
-            List<Reaction> reactions = reactionRepository.findByReviewId(review.getId());
-            int likeCount = 0;
-            int dislikeCount = 0;
-            for (Reaction reaction: reactions){
-                if (reaction.getLike()){
-                    likeCount++;
-                }else{
-                    dislikeCount++;
-                }
-            }
-            return new ReviewOutputDto(review.getClient().getId(), review.getMedia().getId(), review.getRating(),
-                    review.getWatchStatus().toUpperCase(), review.getText(), review.getClient().getName(), review.getClient().getPhotoUrl(), review.getMedia().getName(), review.getMedia().getPhotoUrl(),
-                    review.getId(), review.getDateTime(), likeCount, dislikeCount);
-        });
+        return reviews.map(review -> modelMapper.map(review, ReviewOutputDto.class));
     }
 
     @Override
@@ -208,31 +181,7 @@ public class ReviewServiceImpl implements ReviewService {
         if (review == null){
             throw new ReviewNotFoundException("Client with id: " + clientId + " doesnt have a review with id: " + mediaId);
         }
-        return createReviewOutputDto(Collections.singletonList(review)).getFirst();
+        return modelMapper.map(review, ReviewOutputDto.class);
     }
 
-    private List<ReviewOutputDto> createReviewOutputDto(List<Review> reviews){
-        List<ReviewOutputDto> reviewOutputDtos = new ArrayList<>();
-        for (Review review: reviews){
-            List<Reaction> reactions = reactionRepository.findByReviewId(review.getId());
-            int likeCount = 0;
-            int dislikeCount = 0;
-            for (Reaction reaction: reactions){
-                if (reaction.getLike()){
-                    likeCount++;
-                }
-                else{
-                    dislikeCount++;
-                }
-
-            }
-
-            ReviewOutputDto reviewOutputDto = new ReviewOutputDto(review.getClient().getId(), review.getMedia().getId(), review.getRating(),
-                    review.getWatchStatus().toUpperCase(), review.getText(), review.getClient().getName(), review.getClient().getPhotoUrl(), review.getMedia().getName(), review.getMedia().getPhotoUrl(),
-                    review.getId(), review.getDateTime(), likeCount, dislikeCount);
-
-            reviewOutputDtos.add(reviewOutputDto);
-        }
-        return reviewOutputDtos;
-    }
 }

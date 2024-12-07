@@ -48,9 +48,11 @@ public class AdminControllerCreateImpl implements AdminControllerCreate {
         var base = createBaseViewModel("Client create page", 1, null, null);
         model.addAttribute("model", base);
         model.addAttribute("entity", "client");
+
         if (!model.containsAttribute("form")) {
             model.addAttribute("form", new ClientFormModel(null, null, null, null));
         }
+
         return "admin-create";
     }
 
@@ -60,9 +62,11 @@ public class AdminControllerCreateImpl implements AdminControllerCreate {
         var base = createBaseViewModel("Client create page", 1, null, null);
         model.addAttribute("model", base);
         model.addAttribute("entity", "genre");
+
         if (!model.containsAttribute("form")) {
             model.addAttribute("form", new GenreFormModel(null));
         }
+
         return "admin-create";
     }
 
@@ -73,9 +77,11 @@ public class AdminControllerCreateImpl implements AdminControllerCreate {
         model.addAttribute("model", base);
         model.addAttribute("entity", "media");
         model.addAttribute("genres", genreService.findAll().stream().map(GenreOutputDto::getName).toList());
+
         if (!model.containsAttribute("form")) {
             model.addAttribute("form", new MediaFormModel(null, null, null, null));
         }
+
         return "admin-create";
     }
 

@@ -3,7 +3,7 @@
 <head>
     <link href="/css/bootstrap.min.css" rel="stylesheet">
     <meta charset="UTF-8">
-    <title th:text="${model.title}"></title>
+    <title th:text="${model.baseViewModel.title}"></title>
 </head>
 <body class="text-bg-dark">
 <header>
@@ -11,11 +11,11 @@
         <a href="/" class="navbar-brand fs-2 text-white h1 mx-2">Review Spot</a>
         <ul class="nav justify-content-end">
             <li class="nav-item">
-                <img th:src="${model.clientPhotoUrl}" alt="clientPhoto" width="48" height="48" class="rounded-circle">
+                <img th:src="${model.baseViewModel.clientPhotoUrl}" alt="clientPhoto" width="48" height="48" class="rounded-circle">
             </li>
             <li class="nav-item">
-                <a class="nav-link text-white" th:text="${model.clientName}"
-                   th:href="@{/client/{id}(id=${model.clientId})}">Link</a>
+                <a class="nav-link text-white" th:text="${model.baseViewModel.clientName}"
+                   th:href="@{/client/{id}(id=${model.baseViewModel.clientId})}">Link</a>
             </li>
         </ul>
     </nav>
@@ -25,9 +25,9 @@
     <div class="container text-center position-absolute top-50 start-50 translate-middle">
 
         <div th:if="${error}" class="alert alert-danger w-50 mx-auto" role="alert" th:text="${error}"></div>
-        <th:block  th:switch="${entity}">
+        <th:block  th:switch="${model.entityType}">
             <div th:case="'client'">
-                <form th:action="@{/admin/edit/{id}/client(id=${clientId})}" th:object="${form}" method="POST">
+                <form th:action="@{/admin/edit/{id}/client(id=${model.entityId})}" th:object="${clientForm}" method="POST">
                     <h2>Client edit page</h2>
                     <div class="input-group mb-3 w-50 mx-auto">
                         <span class="input-group-text">Имя</span>
@@ -41,7 +41,7 @@
                 </form>
             </div>
             <div th:case="'genre'">
-                <form th:action="@{/admin/edit/{id}/genre(id=${genreId})}" th:object="${form}" method="POST">
+                <form th:action="@{/admin/edit/{id}/genre(id=${model.entityId})}" th:object="${genreForm}" method="POST">
                     <h2>Genre edit page</h2>
                     <div class="input-group mb-3 w-50 mx-auto">
                         <span class="input-group-text">Название</span>
@@ -52,7 +52,7 @@
             </div>
             <div th:case="'media'">
                 <h2>Media edit page</h2>
-                <form th:action="@{/admin/edit/{id}/media(id=${mediaId})}" th:object="${form}" method="POST">
+                <form th:action="@{/admin/edit/{id}/media(id=${model.entityId})}" th:object="${mediaForm}" method="POST">
                     <div class="input-group mb-3 w-50 mx-auto">
                         <span class="input-group-text">Название</span>
                         <input type="text" name="name" class="form-control" th:field="*{name}" placeholder="Введите название медиа" required>

@@ -1,6 +1,7 @@
 package com.webServer.ReviewSpot.controller.adminPanel;
 
 import com.reviewSpot.models.controllers.adminPanel.AdminControllerEdit;
+import com.reviewSpot.models.viewmodel.AdminViewModelEntityEdit;
 import com.reviewSpot.models.viewmodel.card.BaseViewModel;
 import com.reviewSpot.models.viewmodel.form.client.ClientEditForm;
 import com.reviewSpot.models.viewmodel.form.client.ClientFormModel;
@@ -41,7 +42,6 @@ public class AdminControllerEditImpl implements AdminControllerEdit {
     @Override
     @GetMapping("/{id}/client")
     public String editClient(@PathVariable int id, Model model, RedirectAttributes redirectAttributes) {
-        var base = createBaseViewModel("Client edit page", 1, null, null);
         ClientInfoDto client;
         try {
             client = clientService.findById(id);
@@ -50,17 +50,16 @@ public class AdminControllerEditImpl implements AdminControllerEdit {
             return "redirect:/admin";
         }
 
-        model.addAttribute("form", new ClientFormModel(client.getName(), null, null, client.getPhotoUrl()));
-        model.addAttribute("model", base);
-        model.addAttribute("entity", "client");
-        model.addAttribute("clientId", id);
+        var viewModel = new AdminViewModelEntityEdit(createBaseViewModel("Client edit page", 1, null, null), "client", id);
+
+        model.addAttribute("model", viewModel);
+        model.addAttribute("clientForm",new ClientEditForm(client.getName(), client.getPhotoUrl()));
         return "admin-edit";
     }
 
     @Override
     @GetMapping("/{id}/genre")
     public String editGenre(@PathVariable int id, Model model, RedirectAttributes redirectAttributes) {
-        var base = createBaseViewModel("Genre edit page", 1, null, null);
         GenreOutputDto genre;
         try {
             genre = genreService.findById(id);
@@ -68,17 +67,18 @@ public class AdminControllerEditImpl implements AdminControllerEdit {
             redirectAttributes.addFlashAttribute("error", e.getMessage());
             return "redirect:/admin";
         }
-        model.addAttribute("form", new GenreFormModel(genre.getName()));
-        model.addAttribute("model", base);
-        model.addAttribute("entity", "genre");
-        model.addAttribute("genreId", id);
+
+        var viewModel = new AdminViewModelEntityEdit(createBaseViewModel("Genre edit page", 1, null, null),
+                "genre", id);
+
+        model.addAttribute("model", viewModel);
+        model.addAttribute("genreForm", new GenreFormModel(genre.getName()));
         return "admin-edit";
     }
 
     @Override
     @GetMapping("/{id}/media")
     public String editMedia(@PathVariable int id, Model model, RedirectAttributes redirectAttributes) {
-        var base = createBaseViewModel("Media edit page", 1, null, null);
         MediaOutputDto media;
         try {
             media = mediaService.findById(id);
@@ -86,10 +86,12 @@ public class AdminControllerEditImpl implements AdminControllerEdit {
             redirectAttributes.addFlashAttribute("error", e.getMessage());
             return "redirect:/admin";
         }
-        model.addAttribute("model", base);
-        model.addAttribute("form", new MediaFormModel(media.getName(), media.getPhotoUrl(), media.getDescription(), media.getGenre()));
-        model.addAttribute("entity", "media");
-        model.addAttribute("mediaId", id);
+
+        var viewModel = new AdminViewModelEntityEdit(createBaseViewModel("Media edit page", 1, null, null),
+                "media", id);
+
+        model.addAttribute("model", viewModel);
+        model.addAttribute("mediaForm", new MediaFormModel(media.getName(), media.getPhotoUrl(), media.getDescription(), media.getGenre()));
         model.addAttribute("genres", genreService.findAll().stream().map(GenreOutputDto::getName).toList());
 
         return "admin-edit";
@@ -99,6 +101,8 @@ public class AdminControllerEditImpl implements AdminControllerEdit {
     @PostMapping("/{id}/client")
     public String createClient(@PathVariable int id, @Valid @ModelAttribute("clientForm") ClientEditForm clientEditForm,
                                BindingResult bindingResult, RedirectAttributes redirectAttributes) {
+        System.out.println(clientEditForm.name());
+        System.out.println(clientEditForm.photoUrl());
         if (bindingResult.hasErrors()){
             redirectAttributes.addFlashAttribute("error", "Error in filling out the form");
             redirectAttributes.addFlashAttribute("form", clientEditForm);

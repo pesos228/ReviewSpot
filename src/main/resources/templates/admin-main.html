@@ -3,7 +3,7 @@
 <head>
     <link href="/css/bootstrap.min.css" rel="stylesheet">
     <meta charset="UTF-8">
-    <title th:text="${model.title}"></title>
+    <title th:text="${model.baseViewModel.title}"></title>
 </head>
 <body class="text-bg-dark">
 <header>
@@ -11,10 +11,10 @@
         <a href="/" class="navbar-brand fs-2 text-white h1 mx-2">Review Spot</a>
         <ul class="nav justify-content-end ">
             <li class="nav-item">
-                <img th:src="${model.clientPhotoUrl}" alt="clientPhoto" width="48" height="48" class="rounded-circle">
+                <img th:src="${model.baseViewModel.clientPhotoUrl}" alt="clientPhoto" width="48" height="48" class="rounded-circle">
             </li>
             <li class="nav-item">
-                <a class="nav-link text-white" th:text="${model.clientName}" th:href="@{/client/{id}(id=${model.clientId})}">Link</a>
+                <a class="nav-link text-white" th:text="${model.baseViewModel.clientName}" th:href="@{/client/{id}(id=${model.baseViewModel.clientId})}">Link</a>
             </li>
         </ul>
     </nav>
@@ -44,7 +44,7 @@
             </ul>
         </div>
         <div class="card-body">
-            <th:block th:switch="${entity}">
+            <th:block th:switch="${model.entityType}">
                 <div th:case="'client'">
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <h5 class="card-title">Client Management</h5>
@@ -62,7 +62,7 @@
                         </tr>
                         </thead>
                         <tbody>
-                        <tr th:each="client : ${clients.content}">
+                        <tr th:each="client : ${model.currentList}">
                             <td th:text="${client.id}">Client ID</td>
                             <td>
                                 <a th:href="@{/client/{id}(id=${client.id})}">
@@ -82,32 +82,32 @@
                         </tr>
                         </tbody>
                     </table>
-                    <form th:action="@{/admin/client}" method="get" th:object="${filter}">
+                    <form th:action="@{/admin/client}" method="get" th:object="${model.pagination}">
                         <div class="col-2">
-                            <select class="form-select" name="size">
-                                <option th:value="5" th:text="5" th:selected="${filter.size == 5}"></option>
-                                <option th:value="10" th:text="10" th:selected="${filter.size == 10}"></option>
-                                <option th:value="20" th:text="20" th:selected="${filter.size == 20}"></option>
-                                <option th:value="50" th:text="50" th:selected="${filter.size == 50}"></option>
+                            <select class="form-select" name="clientSize">
+                                <option th:value="5" th:text="5" th:selected="${model.pagination.clientSize == 5}"></option>
+                                <option th:value="10" th:text="10" th:selected="${model.pagination.clientSize == 10}"></option>
+                                <option th:value="20" th:text="20" th:selected="${model.pagination.clientSize == 20}"></option>
+                                <option th:value="50" th:text="50" th:selected="${model.pagination.clientSize == 50}"></option>
                             </select>
                         </div>
 
                         <nav aria-label="Client pagination" class="mt-3">
                             <ul class="pagination pagination-sm justify-content-center">
-                                <li class="page-item" th:classappend="${clients.number == 0} ? 'disabled'">
-                                    <button type="submit" class="page-link" name="page" th:value="${clients.number}">
+                                <li class="page-item" th:classappend="${model.pagination.clientPage == 1} ? 'disabled'">
+                                    <button type="submit" class="page-link" name="clientPage" th:value="${model.pagination.clientPage - 1}">
                                         Previous
                                     </button>
                                 </li>
                                 <li class="page-item"
-                                    th:each="pageNumber : ${#numbers.sequence(1, clients.totalPages)}"
-                                    th:classappend="${pageNumber == clients.number + 1} ? 'active'">
-                                    <button type="submit" class="page-link" name="page" th:value="${pageNumber}" th:text="${pageNumber}">
+                                    th:each="pageNumber : ${#numbers.sequence(1, model.totalPages)}"
+                                    th:classappend="${pageNumber == model.pagination.clientPage} ? 'active'">
+                                    <button type="submit" class="page-link" name="clientPage" th:value="${pageNumber}" th:text="${pageNumber}">
                                         1
                                     </button>
                                 </li>
-                                <li class="page-item" th:classappend="${clients.number + 1 == clients.totalPages} ? 'disabled'">
-                                    <button type="submit" class="page-link" name="page" th:value="${clients.number + 2}">
+                                <li class="page-item" th:classappend="${model.pagination.clientPage == model.totalPages} ? 'disabled'">
+                                    <button type="submit" class="page-link" name="clientPage" th:value="${model.pagination.clientPage + 1}">
                                         Next
                                     </button>
                                 </li>
@@ -129,7 +129,7 @@
                         </tr>
                         </thead>
                         <tbody>
-                        <tr th:each="genre : ${genres}">
+                        <tr th:each="genre : ${model.currentList}">
                             <td th:text="${genre.id}">Genre ID</td>
                             <td th:text="${genre.name}">Genre name</td>
                             <td>
@@ -146,32 +146,32 @@
                         </tr>
                         </tbody>
                     </table>
-                    <form th:action="@{/admin/genre}" method="get" th:object="${filter}">
+                    <form th:action="@{/admin/genre}" method="get" th:object="${model.pagination}">
                         <div class="col-2">
-                            <select class="form-select" name="size">
-                                <option th:value="5" th:text="5" th:selected="${filter.size == 5}"></option>
-                                <option th:value="10" th:text="10" th:selected="${filter.size == 10}"></option>
-                                <option th:value="20" th:text="20" th:selected="${filter.size == 20}"></option>
-                                <option th:value="50" th:text="50" th:selected="${filter.size == 50}"></option>
+                            <select class="form-select" name="genreSize">
+                                <option th:value="5" th:text="5" th:selected="${model.pagination.genreSize == 5}"></option>
+                                <option th:value="10" th:text="10" th:selected="${model.pagination.genreSize == 10}"></option>
+                                <option th:value="20" th:text="20" th:selected="${model.pagination.genreSize == 20}"></option>
+                                <option th:value="50" th:text="50" th:selected="${model.pagination.genreSize == 50}"></option>
                             </select>
                         </div>
 
                         <nav aria-label="Genre pagination" class="mt-3">
                             <ul class="pagination pagination-sm justify-content-center">
-                                <li class="page-item" th:classappend="${genres.number == 0} ? 'disabled'">
-                                    <button type="submit" class="page-link" name="page" th:value="${genres.number}">
+                                <li class="page-item" th:classappend="${model.pagination.genrePage == 1} ? 'disabled'">
+                                    <button type="submit" class="page-link" name="genrePage" th:value="${model.pagination.genrePage - 1}">
                                         Previous
                                     </button>
                                 </li>
                                 <li class="page-item"
-                                    th:each="pageNumber : ${#numbers.sequence(1, genres.totalPages)}"
-                                    th:classappend="${pageNumber == genres.number + 1} ? 'active'">
-                                    <button type="submit" class="page-link" name="page" th:value="${pageNumber}" th:text="${pageNumber}">
+                                    th:each="pageNumber : ${#numbers.sequence(1, model.totalPages)}"
+                                    th:classappend="${pageNumber == model.pagination.genrePage} ? 'active'">
+                                    <button type="submit" class="page-link" name="genrePage" th:value="${pageNumber}" th:text="${pageNumber}">
                                         1
                                     </button>
                                 </li>
-                                <li class="page-item" th:classappend="${genres.number + 1 == genres.totalPages} ? 'disabled'">
-                                    <button type="submit" class="page-link" name="page" th:value="${genres.number + 2}">
+                                <li class="page-item" th:classappend="${model.pagination.genrePage == model.totalPages} ? 'disabled'">
+                                    <button type="submit" class="page-link" name="genrePage" th:value="${model.pagination.genrePage + 1}">
                                         Next
                                     </button>
                                 </li>
@@ -198,7 +198,7 @@
                         </tr>
                         </thead>
                         <tbody>
-                        <tr th:each="mediaItem : ${media.content}">
+                        <tr th:each="mediaItem : ${model.currentList}">
                             <td th:text="${mediaItem.id}">Media ID</td>
                             <td>
                                 <a th:href="@{/media/{id}(id=${mediaItem.id})}">
@@ -227,32 +227,32 @@
                         </tbody>
                     </table>
 
-                    <form th:action="@{/admin/media}" method="get" th:object="${filter}">
+                    <form th:action="@{/admin/media}" method="get" th:object="${model.pagination}">
                         <div class="col-2">
-                            <select class="form-select" name="size">
-                                <option th:value="5" th:text="5" th:selected="${filter.size == 5}"></option>
-                                <option th:value="10" th:text="10" th:selected="${filter.size == 10}"></option>
-                                <option th:value="20" th:text="20" th:selected="${filter.size == 20}"></option>
-                                <option th:value="50" th:text="50" th:selected="${filter.size == 50}"></option>
+                            <select class="form-select" name="mediaSize">
+                                <option th:value="5" th:text="5" th:selected="${model.pagination.mediaSize == 5}"></option>
+                                <option th:value="10" th:text="10" th:selected="${model.pagination.mediaSize == 10}"></option>
+                                <option th:value="20" th:text="20" th:selected="${model.pagination.mediaSize == 20}"></option>
+                                <option th:value="50" th:text="50" th:selected="${model.pagination.mediaSize == 50}"></option>
                             </select>
                         </div>
 
                         <nav aria-label="Media pagination" class="mt-3">
                             <ul class="pagination pagination-sm justify-content-center">
-                                <li class="page-item" th:classappend="${media.number == 0} ? 'disabled'">
-                                    <button type="submit" class="page-link" name="page" th:value="${media.number}">
+                                <li class="page-item" th:classappend="${model.pagination.mediaPage == 1} ? 'disabled'">
+                                    <button type="submit" class="page-link" name="mediaPage" th:value="${model.pagination.mediaPage - 1}">
                                         Previous
                                     </button>
                                 </li>
                                 <li class="page-item"
-                                    th:each="pageNumber : ${#numbers.sequence(1, media.totalPages)}"
-                                    th:classappend="${pageNumber == media.number + 1} ? 'active'">
-                                    <button type="submit" class="page-link" name="page" th:value="${pageNumber}" th:text="${pageNumber}">
+                                    th:each="pageNumber : ${#numbers.sequence(1, model.totalPages)}"
+                                    th:classappend="${pageNumber == model.pagination.mediaPage} ? 'active'">
+                                    <button type="submit" class="page-link" name="mediaPage" th:value="${pageNumber}" th:text="${pageNumber}">
                                         1
                                     </button>
                                 </li>
-                                <li class="page-item" th:classappend="${media.number + 1 == media.totalPages} ? 'disabled'">
-                                    <button type="submit" class="page-link" name="page" th:value="${media.number + 2}">
+                                <li class="page-item" th:classappend="${model.pagination.mediaPage == model.totalPages} ? 'disabled'">
+                                    <button type="submit" class="page-link" name="mediaPage" th:value="${model.pagination.mediaPage + 1}">
                                         Next
                                     </button>
                                 </li>
