@@ -8,15 +8,14 @@ import com.webServer.ReviewSpot.dto.ClientInputDto;
 import com.webServer.ReviewSpot.exceptions.ClientEmailAlreadyExistsException;
 import com.webServer.ReviewSpot.exceptions.ClientNotFoundException;
 import com.webServer.ReviewSpot.service.ClientService;
+import com.webServer.ReviewSpot.service.impl.UserDetailsServiceImpl;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
 
 @Controller
 @RequestMapping("/auth")
@@ -32,9 +31,12 @@ public class AuthControllerImpl implements AuthController {
 
     @Override
     @GetMapping("/login")
-    public String pageLogin(Model model) {
-        var baseView = createBaseViewModel("Authorization", -1, null, null);
+    public String pageLogin(@RequestParam(value = "error", required = false) String error, Model model) {
+        var baseView = createBaseViewModel("Authorization",null);
         model.addAttribute("model", baseView);
+        if (error != null) {
+            model.addAttribute("error", "Неверный логин или пароль");
+        }
         model.addAttribute("loginForm", new ClientLoginFormModel(null, null));
         return "auth-login";
     }
@@ -42,44 +44,17 @@ public class AuthControllerImpl implements AuthController {
     @Override
     @GetMapping("/register")
     public String pageRegistration(Model model) {
-        var baseView = createBaseViewModel("Registration", -1, null, null);
+        var baseView = createBaseViewModel("Registration",  null);
         model.addAttribute("model", baseView);
         model.addAttribute("newClient", new ClientFormModel(null, null, null, null));
         return "auth-reg";
     }
 
-    @Override
-    @PostMapping("/login")
-    public String requestLogin(@Valid @ModelAttribute("loginForm") ClientLoginFormModel loginForm,
-                               BindingResult bindingResult, Model model) {
-        var baseView = createBaseViewModel("Authorization", -1, null, null);
-        model.addAttribute("model", baseView);
-
-        if (bindingResult.hasErrors()){
-            model.addAttribute("error", "Error in filling out the form");
-            return "auth-login";
-        }
-
-        try {
-            if (!clientService.authenticateClient(loginForm.email(), loginForm.password())){
-                model.addAttribute("error", "Invalid login or password");
-                return "auth-login";
-            }
-        }catch (ClientNotFoundException e){
-            model.addAttribute("error", e.getMessage());
-            return "auth-login";
-        }
-
-
-        return "redirect:/";
-    }
 
     @Override
     @PostMapping("/register")
     public String requestRegister(@Valid @ModelAttribute("newClient") ClientFormModel clientFormModel,
                                   BindingResult bindingResult, Model model) {
-        var baseView = createBaseViewModel("Registration", -1, null, null);
-        model.addAttribute("model", baseView);
 
         if (bindingResult.hasErrors()){
             model.addAttribute("error", "Error in filling out the form");
@@ -91,7 +66,7 @@ public class AuthControllerImpl implements AuthController {
                     clientFormModel.email(),
                     clientFormModel.password(),
                     clientFormModel.photoUrl()));
-            return "redirect:/";
+            return "redirect:/auth/login";
         }catch (ClientEmailAlreadyExistsException e){
             model.addAttribute("error", e.getMessage());
             return "auth-reg";
@@ -99,7 +74,13 @@ public class AuthControllerImpl implements AuthController {
     }
 
     @Override
-    public BaseViewModel createBaseViewModel(String title, int id, String clientName, String clientPhotoUrl) {
-        return new BaseViewModel(title, id, clientName, clientPhotoUrl);
+    public BaseViewModel createBaseViewModel(String title, UserDetails userDetails) {
+        if (userDetails == null){
+            return new BaseViewModel(title, -1, null, null);
+        }
+        else{
+            UserDetailsServiceImpl.CustomUser customUser = (UserDetailsServiceImpl.CustomUser) userDetails;
+            return new BaseViewModel(title, customUser.getId(), customUser.getName(), customUser.getPhotoUrl());
+        }
     }
 }

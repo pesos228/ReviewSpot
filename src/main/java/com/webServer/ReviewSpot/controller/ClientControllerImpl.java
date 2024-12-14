@@ -14,8 +14,11 @@ import com.webServer.ReviewSpot.service.ClientService;
 import com.webServer.ReviewSpot.service.CommentService;
 import com.webServer.ReviewSpot.service.ReactionService;
 import com.webServer.ReviewSpot.service.ReviewService;
+import com.webServer.ReviewSpot.service.impl.UserDetailsServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -42,11 +45,7 @@ public class ClientControllerImpl implements ClientController {
     public String clientProfile(@ModelAttribute("commentForm") CommentPageFormModel commentForm,
                                 @ModelAttribute("reviewForm") ReviewPageFormModel reviewForm,
                                 @PathVariable int id,
-                                Model model) {
-        System.out.println(commentForm.commentPage());
-        System.out.println(commentForm.commentSize());
-        System.out.println(reviewForm.reviewSize());
-        System.out.println(reviewForm.reviewPage());
+                                Model model, @AuthenticationPrincipal UserDetails userDetails) {
         var commentPage = commentForm.commentPage() != null ? commentForm.commentPage() : 1;
         var commentSize = commentForm.commentSize() != null ? commentForm.commentSize() : 3;
         var reviewPage = reviewForm.reviewPage() != null ? reviewForm.reviewPage() : 1;
@@ -55,7 +54,7 @@ public class ClientControllerImpl implements ClientController {
         commentForm = new CommentPageFormModel(commentPage, commentSize);
         reviewForm = new ReviewPageFormModel(reviewPage, reviewSize);
 
-        var base = createBaseViewModel("Client profile", 2,"Testik", "https://png.pngtree.com/png-vector/20240123/ourlarge/pngtree-cute-little-orange-cat-cute-kitty-png-image_11459046.png");
+        var base = createBaseViewModel("Client profile", userDetails);
         var clientWeb = clientService.findById(id);
 
         Page<CommentOutputDto> lastComments = commentService.getLastCommentsByClientId(id, commentPage, commentSize);
@@ -80,7 +79,13 @@ public class ClientControllerImpl implements ClientController {
     }
 
     @Override
-    public BaseViewModel createBaseViewModel(String title, int id, String clientName, String clientPhotoUrl) {
-        return new BaseViewModel(title, id, clientName, clientPhotoUrl);
+    public BaseViewModel createBaseViewModel(String title, UserDetails userDetails) {
+        if (userDetails == null){
+            return new BaseViewModel(title, -1, null, null);
+        }
+        else{
+            UserDetailsServiceImpl.CustomUser customUser = (UserDetailsServiceImpl.CustomUser) userDetails;
+            return new BaseViewModel(title, customUser.getId(), customUser.getName(), customUser.getPhotoUrl());
+        }
     }
 }

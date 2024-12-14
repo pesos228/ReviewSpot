@@ -5,13 +5,15 @@ import java.util.List;
 public class ClientInfoDto {
     private int id;
     private String name;
+    private String role;
     private String photoUrl;
     private List<CommentOutputDto> comments;
     private List<ReviewOutputDto> reviews;
 
-    public ClientInfoDto(int id, String name, String photoUrl, List<CommentOutputDto> comments, List<ReviewOutputDto> reviews) {
+    public ClientInfoDto(int id, String name, String role, String photoUrl, List<CommentOutputDto> comments, List<ReviewOutputDto> reviews) {
         this.id = id;
         this.name = name;
+        this.role = role;
         this.photoUrl = photoUrl;
         this.comments = comments;
         this.reviews = reviews;
@@ -34,6 +36,14 @@ public class ClientInfoDto {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getRole() {
+        return role;
+    }
+
+    public void setRole(String role) {
+        this.role = role;
     }
 
     public String getPhotoUrl() {

@@ -6,9 +6,11 @@ import com.reviewSpot.models.viewmodel.form.reaction.ReactionFormModel;
 import com.webServer.ReviewSpot.dto.ReactionInputDto;
 import com.webServer.ReviewSpot.exceptions.*;
 import com.webServer.ReviewSpot.service.ReactionService;
+import com.webServer.ReviewSpot.service.impl.UserDetailsServiceImpl;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
@@ -70,7 +72,13 @@ public class ReactionControllerImpl implements ReactionController {
     }
 
     @Override
-    public BaseViewModel createBaseViewModel(String title, int id, String clientName, String clientPhotoUrl) {
-        return new BaseViewModel(title, id, clientName, clientPhotoUrl);
+    public BaseViewModel createBaseViewModel(String title, UserDetails userDetails) {
+        if (userDetails == null){
+            return new BaseViewModel(title, -1, null, null);
+        }
+        else{
+            UserDetailsServiceImpl.CustomUser customUser = (UserDetailsServiceImpl.CustomUser) userDetails;
+            return new BaseViewModel(title, customUser.getId(), customUser.getName(), customUser.getPhotoUrl());
+        }
     }
 }

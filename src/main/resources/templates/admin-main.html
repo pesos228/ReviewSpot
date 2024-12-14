@@ -3,20 +3,26 @@
 <head>
     <link href="/css/bootstrap.min.css" rel="stylesheet">
     <meta charset="UTF-8">
-    <title th:text="${model.baseViewModel.title}"></title>
+    <title th:text="${model.currentClient.title}"></title>
 </head>
 <body class="text-bg-dark">
 <header>
-    <nav class="navbar bg-body-dark">
-        <a href="/" class="navbar-brand fs-2 text-white h1 mx-2">Review Spot</a>
-        <ul class="nav justify-content-end ">
-            <li class="nav-item">
-                <img th:src="${model.baseViewModel.clientPhotoUrl}" alt="clientPhoto" width="48" height="48" class="rounded-circle">
-            </li>
-            <li class="nav-item">
-                <a class="nav-link text-white" th:text="${model.baseViewModel.clientName}" th:href="@{/client/{id}(id=${model.baseViewModel.clientId})}">Link</a>
-            </li>
-        </ul>
+    <nav class="navbar navbar-dark bg-dark">
+        <div class="container-fluid">
+            <a href="/" class="navbar-brand fs-2 text-white">Review Spot</a>
+            <div class="d-flex align-items-center ms-auto">
+                <div th:if="${model.currentClient.clientId != -1}" class="d-flex align-items-center">
+                    <form th:method="post" th:action="@{/auth/logout}">
+                        <input class="nav-link text-white me-5" type="submit" value="Logout">
+                    </form>
+                    <img th:src="${model.currentClient.clientPhotoUrl}" alt="clientPhoto" width="48" height="48" class="rounded-circle me-3">
+                    <a class="nav-link text-white me-3" th:text="${model.currentClient.clientName}" th:href="@{/client/{id}(id=${model.currentClient.clientId})}">Link</a>
+                </div>
+                <div th:if="${model.currentClient.clientId == -1}">
+                    <a class="nav-link text-white" th:href="@{/auth/login}">Login</a>
+                </div>
+            </div>
+        </div>
     </nav>
 </header>
 
@@ -41,6 +47,12 @@
                 <li class="nav-item">
                     <a class="nav-link ${entity == 'media' ? 'active' : ''}" href="/admin/media">Media</a>
                 </li>
+                <li class="nav-item">
+                    <a class="nav-link ${entity == 'comment' ? 'active' : ''}" href="/admin/comment">Comments</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link ${entity == 'comment' ? 'active' : ''}" href="/admin/review">Reviews</a>
+                </li>
             </ul>
         </div>
         <div class="card-body">
@@ -56,6 +68,7 @@
                             <th>ID</th>
                             <th>Photo</th>
                             <th>Name</th>
+                            <th>Role</th>
                             <th>Comments Count</th>
                             <th>Reviews Count</th>
                             <th>Actions</th>
@@ -74,6 +87,7 @@
                                 <span th:unless="${client.photoUrl != null}">No Photo</span>
                             </td>
                             <td th:text="${client.name}">Client Name</td>
+                            <td th:text="${client.role}">Role</td>
                             <td th:text="${client.comments != null} ? ${client.comments.size()} : 0">Comments Count</td>
                             <td th:text="${client.reviews != null} ? ${client.reviews.size()} : 0">Reviews Count</td>
                             <td>
@@ -259,6 +273,150 @@
                             </ul>
                         </nav>
                     </form>
+                </div>
+                <div th:case="'comment'">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="card-title">Comment Management</h5>
+                    </div>
+                    <table class="table">
+                        <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Photo</th>
+                            <th>Name</th>
+                            <th>Content</th>
+                            <th>Actions</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="comment : ${model.currentList}">
+                            <td th:text="${comment.id}">Comment ID</td>
+                            <td>
+                                <a th:href="@{/client/{id}(id=${comment.clientId})}">
+                                    <img th:if="${comment.clientPhotoUrl != null}"
+                                         th:src="${comment.clientPhotoUrl}"
+                                         style="width: 50px; height: 50px; object-fit: cover;"
+                                         alt="Client Photo">
+                                </a>
+                                <span th:unless="${comment.clientPhotoUrl != null}">No Photo</span>
+                            </td>
+                            <td th:text="${comment.clientName}">Name</td>
+                            <td th:text="${comment.text}">Content</td>
+                            <td>
+                                <form th:action="@{/admin/delete/{id}/comment(id=${comment.id})}" method="post">
+                                    <input type="hidden" name="id" th:value="${comment.id}">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+                                </form>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                    <form th:action="@{/admin/comment}" method="get" th:object="${model.pagination}">
+                        <div class="col-2">
+                            <select class="form-select" name="commentSize">
+                                <option th:value="5" th:text="5" th:selected="${model.pagination.commentSize == 5}"></option>
+                                <option th:value="10" th:text="10" th:selected="${model.pagination.commentSize == 10}"></option>
+                                <option th:value="20" th:text="20" th:selected="${model.pagination.commentSize == 20}"></option>
+                                <option th:value="50" th:text="50" th:selected="${model.pagination.commentSize == 50}"></option>
+                            </select>
+                        </div>
+
+                        <nav aria-label="Comment pagination" class="mt-3">
+                            <ul class="pagination pagination-sm justify-content-center">
+                                <li class="page-item" th:classappend="${model.pagination.commentPage == 1} ? 'disabled'">
+                                    <button type="submit" class="page-link" name="commentPage" th:value="${model.pagination.commentPage - 1}">
+                                        Previous
+                                    </button>
+                                </li>
+                                <li class="page-item"
+                                    th:each="pageNumber : ${#numbers.sequence(1, model.totalPages)}"
+                                    th:classappend="${pageNumber == model.pagination.commentPage} ? 'active'">
+                                    <button type="submit" class="page-link" name="commentPage" th:value="${pageNumber}" th:text="${pageNumber}">
+                                        1
+                                    </button>
+                                </li>
+                                <li class="page-item" th:classappend="${model.pagination.commentPage == model.totalPages} ? 'disabled'">
+                                    <button type="submit" class="page-link" name="commentPage" th:value="${model.pagination.commentPage + 1}">
+                                        Next
+                                    </button>
+                                </li>
+                            </ul>
+                        </nav>
+                    </form>
+
+                </div>
+                <div th:case="'review'">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="card-title">Comment Management</h5>
+                    </div>
+                    <table class="table">
+                        <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Photo</th>
+                            <th>Name</th>
+                            <th>Media</th>
+                            <th>Content</th>
+                            <th>Actions</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="review : ${model.currentList}">
+                            <td th:text="${review.id}">Comment ID</td>
+                            <td>
+                                <a th:href="@{/client/{id}(id=${review.clientId})}">
+                                    <img th:if="${review.clientPhotoUrl != null}"
+                                         th:src="${review.clientPhotoUrl}"
+                                         style="width: 50px; height: 50px; object-fit: cover;"
+                                         alt="Client Photo">
+                                </a>
+                                <span th:unless="${review.clientPhotoUrl != null}">No Photo</span>
+                            </td>
+                            <td th:text="${review.clientName}">Name</td>
+                            <td th:text="${review.mediaName}">Media name</td>
+                            <td th:text="${review.text}">Content</td>
+                            <td>
+                                <form th:action="@{/admin/delete/{id}/review(id=${review.id})}" method="post">
+                                    <input type="hidden" name="id" th:value="${review.id}">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+                                </form>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                    <form th:action="@{/admin/review}" method="get" th:object="${model.pagination}">
+                        <div class="col-2">
+                            <select class="form-select" name="reviewSize">
+                                <option th:value="5" th:text="5" th:selected="${model.pagination.reviewSize == 5}"></option>
+                                <option th:value="10" th:text="10" th:selected="${model.pagination.reviewSize == 10}"></option>
+                                <option th:value="20" th:text="20" th:selected="${model.pagination.reviewSize == 20}"></option>
+                                <option th:value="50" th:text="50" th:selected="${model.pagination.reviewSize == 50}"></option>
+                            </select>
+                        </div>
+
+                        <nav aria-label="Review pagination" class="mt-3">
+                            <ul class="pagination pagination-sm justify-content-center">
+                                <li class="page-item" th:classappend="${model.pagination.reviewPage == 1} ? 'disabled'">
+                                    <button type="submit" class="page-link" name="reviewPage" th:value="${model.pagination.reviewPage - 1}">
+                                        Previous
+                                    </button>
+                                </li>
+                                <li class="page-item"
+                                    th:each="pageNumber : ${#numbers.sequence(1, model.totalPages)}"
+                                    th:classappend="${pageNumber == model.pagination.reviewPage} ? 'active'">
+                                    <button type="submit" class="page-link" name="reviewPage" th:value="${pageNumber}" th:text="${pageNumber}">
+                                        1
+                                    </button>
+                                </li>
+                                <li class="page-item" th:classappend="${model.pagination.reviewPage == model.totalPages} ? 'disabled'">
+                                    <button type="submit" class="page-link" name="reviewPage" th:value="${model.pagination.reviewPage + 1}">
+                                        Next
+                                    </button>
+                                </li>
+                            </ul>
+                        </nav>
+                    </form>
+
                 </div>
                 <div th:case="*">
                     <h5 class="card-title">Admin Panel</h5>

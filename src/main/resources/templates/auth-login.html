@@ -14,12 +14,12 @@
 </nav>
 
 <div class="container text-center position-absolute top-50 start-50 translate-middle">
-    <form action="/auth/login" method="post" th:object="${loginForm}">
+    <form th:action="@{/auth/login}" method="post" th:object="${loginForm}">
         <h1>Авторизация</h1>
 
         <div class="input-group mb-3 w-25 mx-auto">
             <span class="input-group-text">Логин</span>
-            <input type="email" class="form-control" name="email" required th:field="*{email}">
+            <input type="email" class="form-control" name="username" required th:field="*{username}">
         </div>
 
         <div class="input-group mb-3 w-25 mx-auto">

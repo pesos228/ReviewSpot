@@ -4,12 +4,15 @@ import com.reviewSpot.models.controllers.adminPanel.AdminController;
 import com.reviewSpot.models.viewmodel.AdminViewModelEntityList;
 import com.reviewSpot.models.viewmodel.card.BaseViewModel;
 import com.reviewSpot.models.viewmodel.form.client.ClientPageFormModel;
+import com.reviewSpot.models.viewmodel.form.comment.CommentPageFormModel;
 import com.reviewSpot.models.viewmodel.form.genre.GenrePageFormModel;
 import com.reviewSpot.models.viewmodel.form.media.MediaPageFormModel;
-import com.webServer.ReviewSpot.service.ClientService;
-import com.webServer.ReviewSpot.service.GenreService;
-import com.webServer.ReviewSpot.service.MediaService;
+import com.reviewSpot.models.viewmodel.form.review.ReviewPageFormModel;
+import com.webServer.ReviewSpot.service.*;
+import com.webServer.ReviewSpot.service.impl.UserDetailsServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -23,31 +26,35 @@ public class AdminControllerImpl implements AdminController {
     private final ClientService clientService;
     private final GenreService genreService;
     private final MediaService mediaService;
+    private final CommentService commentService;
+    private final ReviewService reviewService;
 
     @Autowired
-    public AdminControllerImpl(ClientService clientService, GenreService genreService, MediaService mediaService) {
+    public AdminControllerImpl(ClientService clientService, GenreService genreService, MediaService mediaService, CommentService commentService, ReviewService reviewService) {
         this.clientService = clientService;
         this.genreService = genreService;
         this.mediaService = mediaService;
+        this.commentService = commentService;
+        this.reviewService = reviewService;
     }
 
     @Override
     @GetMapping
-    public String adminPanel(Model model) {
-        model.addAttribute("model", new AdminViewModelEntityList<>(createBaseViewModel("Admin panel", 2, "Testik", "https://png.pngtree.com/png-vector/20240123/ourlarge/pngtree-cute-little-orange-cat-cute-kitty-png-image_11459046.png"),
+    public String adminPanel(Model model, @AuthenticationPrincipal UserDetails userDetails) {
+        model.addAttribute("model", new AdminViewModelEntityList<>(createBaseViewModel("Admin panel", userDetails),
                 null, null, null, 0));
         return "admin-main";
     }
 
     @Override
     @GetMapping("/client")
-    public String adminPanelClient(@ModelAttribute("clientForm") ClientPageFormModel clientForm, Model model) {
+    public String adminPanelClient(@ModelAttribute("clientForm") ClientPageFormModel clientForm, Model model, @AuthenticationPrincipal UserDetails userDetails) {
         var page = clientForm.clientPage() != null ? clientForm.clientPage() : 1;
         var size = clientForm.clientSize() != null ? clientForm.clientSize() : 10;
         clientForm = new ClientPageFormModel(page, size);
         var clients = clientService.findAll(page, size);
 
-        var viewModel = new AdminViewModelEntityList<>(createBaseViewModel("Admin panel", 2, "Testik", "https://png.pngtree.com/png-vector/20240123/ourlarge/pngtree-cute-little-orange-cat-cute-kitty-png-image_11459046.png"),
+        var viewModel = new AdminViewModelEntityList<>(createBaseViewModel("Admin panel", userDetails),
                 clients.stream().toList(), clientForm, "client", clients.getTotalPages());
 
         model.addAttribute("model", viewModel);
@@ -56,13 +63,13 @@ public class AdminControllerImpl implements AdminController {
 
     @Override
     @GetMapping("/genre")
-    public String adminPanelGenre(@ModelAttribute("genreForm") GenrePageFormModel genreForm, Model model) {
+    public String adminPanelGenre(@ModelAttribute("genreForm") GenrePageFormModel genreForm, Model model, @AuthenticationPrincipal UserDetails userDetails) {
         var page = genreForm.genrePage() != null ? genreForm.genrePage() : 1;
         var size = genreForm.genreSize() != null ? genreForm.genreSize() : 5;
         genreForm = new GenrePageFormModel(page, size);
         var genres = genreService.findAll(page, size);
 
-        var viewModel = new AdminViewModelEntityList<>(createBaseViewModel("Admin panel", 2, "Testik", "https://png.pngtree.com/png-vector/20240123/ourlarge/pngtree-cute-little-orange-cat-cute-kitty-png-image_11459046.png"),
+        var viewModel = new AdminViewModelEntityList<>(createBaseViewModel("Admin panel", userDetails),
                 genres.stream().toList(), genreForm, "genre", genres.getTotalPages());
 
         model.addAttribute("model", viewModel);
@@ -71,13 +78,13 @@ public class AdminControllerImpl implements AdminController {
 
     @Override
     @GetMapping("/media")
-    public String adminPanelMedia(@ModelAttribute("mediaForm") MediaPageFormModel mediaForm, Model model) {
+    public String adminPanelMedia(@ModelAttribute("mediaForm") MediaPageFormModel mediaForm, Model model, @AuthenticationPrincipal UserDetails userDetails) {
         var page = mediaForm.mediaPage() != null ? mediaForm.mediaPage() : 1;
         var size = mediaForm.mediaSize() != null ? mediaForm.mediaSize() : 10;
         mediaForm = new MediaPageFormModel(page, size);
         var medias = mediaService.findAll(page, size);
 
-        var viewModel = new AdminViewModelEntityList<>(createBaseViewModel("Admin panel", 2, "Testik", "https://png.pngtree.com/png-vector/20240123/ourlarge/pngtree-cute-little-orange-cat-cute-kitty-png-image_11459046.png"),
+        var viewModel = new AdminViewModelEntityList<>(createBaseViewModel("Admin panel", userDetails),
                 medias.stream().toList(), mediaForm, "media", medias.getTotalPages());
 
         model.addAttribute("model", viewModel);
@@ -85,7 +92,43 @@ public class AdminControllerImpl implements AdminController {
     }
 
     @Override
-    public BaseViewModel createBaseViewModel(String title, int id, String clientName, String clientPhotoUrl) {
-        return new BaseViewModel(title, id, clientName, clientPhotoUrl);
+    @GetMapping("/comment")
+    public String adminPanelComment(@ModelAttribute("mediaForm") CommentPageFormModel commentForm, Model model, @AuthenticationPrincipal UserDetails userDetails) {
+        var page = commentForm.commentPage() != null ? commentForm.commentPage() : 1;
+        var size = commentForm.commentSize() != null ? commentForm.commentSize() : 10;
+        commentForm = new CommentPageFormModel(page, size);
+        var comments = commentService.findAll(page, size);
+
+        var viewModel = new AdminViewModelEntityList<>(createBaseViewModel("Admin panel", userDetails), comments.stream().toList(),
+                commentForm, "comment", comments.getTotalPages());
+
+        model.addAttribute("model", viewModel);
+        return "admin-main";
+    }
+
+    @Override
+    @GetMapping("/review")
+    public String adminPanelReview(@ModelAttribute("reviewForm") ReviewPageFormModel reviewForm, Model model, @AuthenticationPrincipal UserDetails userDetails) {
+        var page = reviewForm.reviewPage() != null ? reviewForm.reviewPage() : 1;
+        var size = reviewForm.reviewSize() != null ? reviewForm.reviewSize() : 10;
+        reviewForm = new ReviewPageFormModel(page, size);
+        var reviews = reviewService.findAll(page, size);
+
+        var viewModel = new AdminViewModelEntityList<>(createBaseViewModel("Admin panel", userDetails), reviews.stream().toList(),
+                reviewForm, "review", reviews.getTotalPages());
+
+        model.addAttribute("model", viewModel);
+        return "admin-main";
+    }
+
+    @Override
+    public BaseViewModel createBaseViewModel(String title, UserDetails userDetails) {
+        if (userDetails == null){
+            return new BaseViewModel(title, -1, null, null);
+        }
+        else{
+            UserDetailsServiceImpl.CustomUser customUser = (UserDetailsServiceImpl.CustomUser) userDetails;
+            return new BaseViewModel(title, customUser.getId(), customUser.getName(), customUser.getPhotoUrl());
+        }
     }
 }

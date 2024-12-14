@@ -14,7 +14,7 @@
 </nav>
 
 <div class="container text-center position-absolute top-50 start-50 translate-middle">
-    <form action="/auth/register" method="post" th:object="${newClient}">
+    <form th:action="@{/auth/register}" method="post" th:object="${newClient}">
         <h1>Регистрация</h1>
 
         <div class="input-group mb-3 w-25 mx-auto">
@@ -38,7 +38,7 @@
             <p th:text="${error}"></p>
         </div>
         <div>
-            <a href="/auth/login">Авторизоваться</a>
+            <a th:href="@{/auth/login}">Авторизоваться</a>
         </div>
     </form>
 </div>

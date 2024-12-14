@@ -8,7 +8,10 @@ import com.reviewSpot.models.viewmodel.form.media.MediaSearchFormModel;
 import com.webServer.ReviewSpot.dto.GenreOutputDto;
 import com.webServer.ReviewSpot.service.GenreService;
 import com.webServer.ReviewSpot.service.MediaService;
+import com.webServer.ReviewSpot.service.impl.UserDetailsServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -33,12 +36,12 @@ public class SearchControllerImpl implements SearchController {
 
     @Override
     @GetMapping
-    public String search(@ModelAttribute("filter") MediaSearchFormModel filter, Model model) {
+    public String search(@ModelAttribute("filter") MediaSearchFormModel filter, Model model, @AuthenticationPrincipal UserDetails userDetails) {
         var searchQuery = filter.searchQuery() != null ? filter.searchQuery() : "";
         var genres = filter.genres() != null ? filter.genres() : new ArrayList<String>();
         var page = filter.page() != null ? filter.page() : 1;
         var size = filter.size() != null ? filter.size() : 5;
-        var base = createBaseViewModel("Search", 2, "Testik", "https://png.pngtree.com/png-vector/20240123/ourlarge/pngtree-cute-little-orange-cat-cute-kitty-png-image_11459046.png");
+        var base = createBaseViewModel("Search", userDetails);
 
         filter = new MediaSearchFormModel(searchQuery, genres, page, size);
 
@@ -57,7 +60,13 @@ public class SearchControllerImpl implements SearchController {
     }
 
     @Override
-    public BaseViewModel createBaseViewModel(String title, int id, String clientName, String clientPhotoUrl) {
-        return new BaseViewModel(title, id, clientName, clientPhotoUrl);
+    public BaseViewModel createBaseViewModel(String title, UserDetails userDetails) {
+        if (userDetails == null){
+            return new BaseViewModel(title, -1, null, null);
+        }
+        else{
+            UserDetailsServiceImpl.CustomUser customUser = (UserDetailsServiceImpl.CustomUser) userDetails;
+            return new BaseViewModel(title, customUser.getId(), customUser.getName(), customUser.getPhotoUrl());
+        }
     }
 }

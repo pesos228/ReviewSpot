@@ -17,4 +17,5 @@ public interface CommentService {
     Page<CommentOutputDto> getLastCommentsByClientId(int id,  int page, int size);
     Page<CommentOutputDto> getLastCommentsByMediaId(int id, int page, int size);
     void deleteById(int id);
+    Page<CommentOutputDto> findAll(int page, int size);
 }

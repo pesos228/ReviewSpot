@@ -70,4 +70,8 @@ public class GlobalExceptionHandler {
     @ResponseStatus(HttpStatus.NOT_FOUND)
     String clientReactionNotFoundException(ClientReactionNotFoundException e){ return e.getMessage();}
 
+    @ResponseBody
+    @ExceptionHandler(RoleNotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    String roleNotFoundException(RoleNotFoundException e){ return e.getMessage();}
 }

@@ -20,4 +20,5 @@ public interface CommentRepository {
     Page<Comment> getLastCommentsByMediaId(int id, Pageable pageable);
     void deleteById(int id);
     Page<Comment> getLastCommentsByClientId(int id, Pageable pageable);
+    Page<Comment> findAll(Pageable pageable);
 }

@@ -4,9 +4,12 @@ import com.webServer.ReviewSpot.dto.ClientInfoDto;
 import com.webServer.ReviewSpot.dto.ClientInputDto;
 import com.webServer.ReviewSpot.dto.ClientOutputDto;
 import com.webServer.ReviewSpot.entity.Client;
+import com.webServer.ReviewSpot.enums.ClientRoles;
 import com.webServer.ReviewSpot.exceptions.ClientEmailAlreadyExistsException;
 import com.webServer.ReviewSpot.exceptions.ClientNotFoundException;
+import com.webServer.ReviewSpot.exceptions.RoleNotFoundException;
 import com.webServer.ReviewSpot.repository.ClientRepository;
+import com.webServer.ReviewSpot.repository.RoleRepository;
 import com.webServer.ReviewSpot.service.ClientService;
 import com.webServer.ReviewSpot.service.CommentService;
 import com.webServer.ReviewSpot.service.ReviewService;
@@ -15,6 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,13 +33,17 @@ public class ClientServiceImpl implements ClientService {
     private final CommentService commentService;
     private final ReviewService reviewService;
     private final ModelMapper modelMapper;
+    private final PasswordEncoder passwordEncoder;
+    private final RoleRepository roleRepository;
 
     @Autowired
-    public ClientServiceImpl(ClientRepository clientRepository, CommentService commentService, ReviewService reviewService, ModelMapper modelMapper) {
+    public ClientServiceImpl(ClientRepository clientRepository, CommentService commentService, ReviewService reviewService, ModelMapper modelMapper, PasswordEncoder passwordEncoder, RoleRepository roleRepository) {
         this.clientRepository = clientRepository;
         this.commentService = commentService;
         this.reviewService = reviewService;
         this.modelMapper = modelMapper;
+        this.passwordEncoder = passwordEncoder;
+        this.roleRepository = roleRepository;
     }
 
 
@@ -46,7 +54,10 @@ public class ClientServiceImpl implements ClientService {
         if (client != null){
             throw new ClientEmailAlreadyExistsException("Client with email: " + clientInputDto.getEmail() + " already exists");
         }
-        clientRepository.save(modelMapper.map(clientInputDto, Client.class));
+        client = modelMapper.map(clientInputDto, Client.class);
+        client.setPassword(passwordEncoder.encode(client.getPassword()));
+        client.setRole(roleRepository.findByName(ClientRoles.CLIENT));
+        clientRepository.save(client);
     }
 
     @Override
@@ -68,12 +79,17 @@ public class ClientServiceImpl implements ClientService {
 
     @Override
     @Transactional
-    public void update(int id, String name, String photoUrl) {
+    public void update(int id, String name, String photoUrl, ClientRoles role) {
         var client = clientRepository.findById(id);
+        var roleEntity = roleRepository.findByName(role);
+        if (roleEntity == null){
+            throw new RoleNotFoundException("Role with name: " + role.getRoleName() + " not found");
+        }
         if (client == null){
             throw new ClientNotFoundException("Client with id: " + id +" not found");
         }
         client.setName(name);
+        client.setRole(roleEntity);
         client.setPhotoUrl(photoUrl);
 
         clientRepository.save(client);
@@ -96,7 +112,7 @@ public class ClientServiceImpl implements ClientService {
                     var comments = commentService.findByClientIdAfterDate(client.getId(), lastWeek);
                     var reviews = reviewService.findByClientIdAfterDate(client.getId(), lastWeek);
 
-                    return new ClientInfoDto(client.getId(), client.getName(), client.getPhotoUrl(), comments, reviews);
+                    return new ClientInfoDto(client.getId(), client.getName(), client.getRole().getName().getRoleName(), client.getPhotoUrl(), comments, reviews);
                 }
         ).sorted((c1, c2) -> Integer.compare(
                         c2.getComments().size() + c2.getReviews().size(),

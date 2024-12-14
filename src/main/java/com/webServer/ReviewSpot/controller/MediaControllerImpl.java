@@ -12,7 +12,10 @@ import com.webServer.ReviewSpot.service.CommentService;
 import com.webServer.ReviewSpot.service.MediaService;
 import com.webServer.ReviewSpot.service.ReactionService;
 import com.webServer.ReviewSpot.service.ReviewService;
+import com.webServer.ReviewSpot.service.impl.UserDetailsServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -40,7 +43,7 @@ public class MediaControllerImpl implements MediaController {
     @GetMapping("/{id}")
     public String mediaPage(@ModelAttribute("commentForm") CommentPageFormModel commentForm,
                             @ModelAttribute("reviewForm") ReviewPageFormModel reviewForm,
-                            @PathVariable int id, Model model){
+                            @PathVariable int id, Model model, @AuthenticationPrincipal UserDetails userDetails){
         var commentPage = commentForm.commentPage() != null ? commentForm.commentPage() : 1;
         var commentSize = commentForm.commentSize() != null ? commentForm.commentSize() : 3;
         var reviewPage = reviewForm.reviewPage() != null ? reviewForm.reviewPage() : 1;
@@ -49,7 +52,7 @@ public class MediaControllerImpl implements MediaController {
         commentForm = new CommentPageFormModel(commentPage, commentSize);
         reviewForm = new ReviewPageFormModel(reviewPage, reviewSize);
 
-        var base = createBaseViewModel("Media page", 2, "Testik", "https://png.pngtree.com/png-vector/20240123/ourlarge/pngtree-cute-little-orange-cat-cute-kitty-png-image_11459046.png");
+        var base = createBaseViewModel("Media page", userDetails);
         var media = mediaService.findById(id);
         MediaCardViewModel mediaCard = new MediaCardViewModel(media.getId(), media.getName(), media.getPhotoUrl(), media.getDescription(), media.getGenre(), media.getRating());
 
@@ -74,7 +77,13 @@ public class MediaControllerImpl implements MediaController {
     }
 
     @Override
-    public BaseViewModel createBaseViewModel(String title, int id, String clientName, String clientPhotoUrl) {
-        return new BaseViewModel(title, id, clientName, clientPhotoUrl);
+    public BaseViewModel createBaseViewModel(String title, UserDetails userDetails) {
+        if (userDetails == null){
+            return new BaseViewModel(title, -1, null, null);
+        }
+        else{
+            UserDetailsServiceImpl.CustomUser customUser = (UserDetailsServiceImpl.CustomUser) userDetails;
+            return new BaseViewModel(title, customUser.getId(), customUser.getName(), customUser.getPhotoUrl());
+        }
     }
 }

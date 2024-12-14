@@ -13,8 +13,11 @@ import com.webServer.ReviewSpot.exceptions.ReviewNotFoundException;
 import com.webServer.ReviewSpot.service.MediaService;
 import com.webServer.ReviewSpot.service.ReactionService;
 import com.webServer.ReviewSpot.service.ReviewService;
+import com.webServer.ReviewSpot.service.impl.UserDetailsServiceImpl;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -39,10 +42,10 @@ public class ReviewControllerImpl implements ReviewController {
 
     @Override
     @GetMapping("/{id}")
-    public String reviewPreview(@PathVariable int id, Model model) {
+    public String reviewPreview(@PathVariable int id, Model model, @AuthenticationPrincipal UserDetails userDetails) {
         var review = reviewService.findById(id);
         var media = mediaService.findById(review.getMediaId());
-        var baseView = createBaseViewModel("Review page", 2,"Testik", "https://png.pngtree.com/png-vector/20240123/ourlarge/pngtree-cute-little-orange-cat-cute-kitty-png-image_11459046.png");
+        var baseView = createBaseViewModel("Review page", userDetails);
 
         model.addAttribute("model", new ReviewViewModel(baseView, review.getId(), media.getName(), media.getPhotoUrl(), media.getId(), review.getClientName(), review.getClientId(), review.getWatchStatus().toString(),
                 review.getText(), review.getRating(), review.getLikeCount(), review.getDislikeCount(), reactionService.isLike(baseView.clientId(), id, "REVIEW"),
@@ -82,7 +85,13 @@ public class ReviewControllerImpl implements ReviewController {
     }
 
     @Override
-    public BaseViewModel createBaseViewModel(String title, int id, String clientName, String clientPhotoUrl) {
-        return new BaseViewModel(title, id, clientName, clientPhotoUrl);
+    public BaseViewModel createBaseViewModel(String title, UserDetails userDetails) {
+        if (userDetails == null){
+            return new BaseViewModel(title, -1, null, null);
+        }
+        else{
+            UserDetailsServiceImpl.CustomUser customUser = (UserDetailsServiceImpl.CustomUser) userDetails;
+            return new BaseViewModel(title, customUser.getId(), customUser.getName(), customUser.getPhotoUrl());
+        }
     }
 }

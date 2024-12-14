@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<html lang="ru" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
   <link href="/css/bootstrap.min.css" rel="stylesheet">
   <meta charset="UTF-8">
@@ -7,16 +8,23 @@
 </head>
 <body class="text-bg-dark">
 <header>
-  <nav class="navbar bg-body-dark">
-    <a href="/" class="navbar-brand fs-2 text-white h1 mx-2">Review Spot</a>
-    <ul class="nav justify-content-end ">
-      <li class="nav-item">
-        <img th:src="${model.currentClient.clientPhotoUrl}" alt="clientPhoto" width="48" height="48" class="rounded-circle">
-      </li>
-      <li class="nav-item">
-        <a class="nav-link text-white" th:text="${model.currentClient.clientName}" th:href="@{/client/{id}(id=${model.currentClient.clientId})}">Link</a>
-      </li>
-    </ul>
+  <nav class="navbar navbar-dark bg-dark">
+    <div class="container-fluid">
+      <a href="/" class="navbar-brand fs-2 text-white">Review Spot</a>
+      <div class="d-flex align-items-center ms-auto">
+        <div th:if="${model.currentClient.clientId != -1}" class="d-flex align-items-center">
+          <form th:method="post" th:action="@{/auth/logout}">
+            <input class="nav-link text-white me-5" type="submit" value="Logout">
+          </form>
+          <a class="nav-link text-white me-5" sec:authorize="hasRole('ADMIN')" th:href="@{/admin}">Admin Panel</a>
+          <img th:src="${model.currentClient.clientPhotoUrl}" alt="clientPhoto" width="48" height="48" class="rounded-circle me-3">
+          <a class="nav-link text-white me-3" th:text="${model.currentClient.clientName}" th:href="@{/client/{id}(id=${model.currentClient.clientId})}">Link</a>
+        </div>
+        <div th:if="${model.currentClient.clientId == -1}">
+          <a class="nav-link text-white" th:href="@{/auth/login}">Login</a>
+        </div>
+      </div>
+    </div>
   </nav>
 </header>
 
@@ -117,7 +125,7 @@
                       </div>
                     </div>
                   </div>
-                  <form action="/comment/delete" method="post" class="ms-auto" th:if="${comment.clientId == model.currentClient.clientId}">
+                  <form th:action="@{/comment/delete}" method="post" class="ms-auto" th:if="${comment.clientId == model.currentClient.clientId}">
                     <input type="hidden" name="commentId" th:value="${comment.commentId}">
                     <input type="hidden" name="currentUrl" th:value="'/client/' + ${comment.clientId}">
                     <button type="submit" class="btn btn-outline-danger">Удалить</button>
@@ -139,7 +147,7 @@
 
                 <div class="d-flex justify-content-between mt-3">
                   <div th:if="${comment.isLike}">
-                    <form action="/reaction/delete" method="post">
+                    <form th:action="@{/reaction/delete}" method="post">
                       <input type="hidden" name="clientId" th:value="${model.currentClient.clientId}">
                       <input type="hidden" name="targetId" th:value="${comment.commentId}">
                       <input type="hidden" name="targetType" value="COMMENT">
@@ -150,7 +158,7 @@
                   </div>
 
                   <div th:if="${not comment.isLike}">
-                    <form action="/reaction" method="post">
+                    <form th:action="@{/reaction}" method="post">
                       <input type="hidden" name="clientId" th:value="${model.currentClient.clientId}">
                       <input type="hidden" name="targetId" th:value="${comment.commentId}">
                       <input type="hidden" name="targetType" value="COMMENT">
@@ -161,7 +169,7 @@
                   </div>
 
                   <div th:if="${comment.isDislike}">
-                    <form action="/reaction/delete" method="post">
+                    <form th:action="@{/reaction/delete}" method="post">
                       <input type="hidden" name="clientId" th:value="${model.currentClient.clientId}">
                       <input type="hidden" name="targetId" th:value="${comment.commentId}">
                       <input type="hidden" name="targetType" value="COMMENT">
@@ -172,7 +180,7 @@
                   </div>
 
                   <div th:if="${not comment.isDislike}">
-                    <form action="/reaction" method="post">
+                    <form th:action="@{/reaction}" method="post">
                       <input type="hidden" name="clientId" th:value="${model.currentClient.clientId}">
                       <input type="hidden" name="targetId" th:value="${comment.commentId}">
                       <input type="hidden" name="targetType" value="COMMENT">

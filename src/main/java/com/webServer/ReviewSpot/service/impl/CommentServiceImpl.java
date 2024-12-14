@@ -154,4 +154,12 @@ public class CommentServiceImpl implements CommentService {
 
         commentRepository.deleteById(id);
     }
+
+    @Override
+    public Page<CommentOutputDto> findAll(int page, int size) {
+        var pageable = PageRequest.of(page - 1, size);
+        return commentRepository.findAll(pageable).map(
+                comment -> modelMapper.map(comment, CommentOutputDto.class)
+        );
+    }
 }

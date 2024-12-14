@@ -16,8 +16,11 @@ import com.webServer.ReviewSpot.exceptions.MediaAlreadyExistsException;
 import com.webServer.ReviewSpot.service.ClientService;
 import com.webServer.ReviewSpot.service.GenreService;
 import com.webServer.ReviewSpot.service.MediaService;
+import com.webServer.ReviewSpot.service.impl.UserDetailsServiceImpl;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -44,8 +47,8 @@ public class AdminControllerCreateImpl implements AdminControllerCreate {
 
     @Override
     @GetMapping("/client")
-    public String createClient(Model model) {
-        var base = createBaseViewModel("Client create page", 1, null, null);
+    public String createClient(Model model, @AuthenticationPrincipal UserDetails userDetails) {
+        var base = createBaseViewModel("Client create page", userDetails);
         model.addAttribute("model", base);
         model.addAttribute("entity", "client");
 
@@ -58,8 +61,8 @@ public class AdminControllerCreateImpl implements AdminControllerCreate {
 
     @Override
     @GetMapping("/genre")
-    public String createGenre(Model model) {
-        var base = createBaseViewModel("Client create page", 1, null, null);
+    public String createGenre(Model model, @AuthenticationPrincipal UserDetails userDetails) {
+        var base = createBaseViewModel("Genre create page", userDetails);
         model.addAttribute("model", base);
         model.addAttribute("entity", "genre");
 
@@ -72,8 +75,8 @@ public class AdminControllerCreateImpl implements AdminControllerCreate {
 
     @Override
     @GetMapping("/media")
-    public String createMedia(Model model) {
-        var base = createBaseViewModel("Client create page", 1, null, null);
+    public String createMedia(Model model, @AuthenticationPrincipal UserDetails userDetails) {
+        var base = createBaseViewModel("Media create page", userDetails);
         model.addAttribute("model", base);
         model.addAttribute("entity", "media");
         model.addAttribute("genres", genreService.findAll().stream().map(GenreOutputDto::getName).toList());
@@ -89,9 +92,6 @@ public class AdminControllerCreateImpl implements AdminControllerCreate {
     @PostMapping("/client")
     public String createClient(@Valid @ModelAttribute("clientForm") ClientFormModel clientFormModel,
                                BindingResult bindingResult, Model model, RedirectAttributes redirectAttributes) {
-        var base = createBaseViewModel("Client create page", 1, null, null);
-
-        model.addAttribute("model", base);
         if (bindingResult.hasErrors()){
             redirectAttributes.addFlashAttribute("error", "Error in filling out the form");
             redirectAttributes.addFlashAttribute("form", clientFormModel);
@@ -112,9 +112,6 @@ public class AdminControllerCreateImpl implements AdminControllerCreate {
     @Override
     @PostMapping("/genre")
     public String createGenre(GenreFormModel genreFormModel, BindingResult bindingResult, Model model, RedirectAttributes redirectAttributes) {
-        var base = createBaseViewModel("Genre create page", 1, null, null);
-
-        model.addAttribute("model", base);
         if (bindingResult.hasErrors()){
             redirectAttributes.addFlashAttribute("error", "Error in filling out the form");
             redirectAttributes.addFlashAttribute("form", genreFormModel);
@@ -135,9 +132,6 @@ public class AdminControllerCreateImpl implements AdminControllerCreate {
     @Override
     @PostMapping("/media")
     public String createMedia(MediaFormModel mediaFormModel, BindingResult bindingResult, Model model, RedirectAttributes redirectAttributes) {
-        var base = createBaseViewModel("Media create page", 1, null, null);
-
-        model.addAttribute("model", base);
         if (bindingResult.hasErrors()){
             redirectAttributes.addFlashAttribute("error", "Error in filling out the form");
             redirectAttributes.addFlashAttribute("form", mediaFormModel);
@@ -157,8 +151,14 @@ public class AdminControllerCreateImpl implements AdminControllerCreate {
     }
 
     @Override
-    public BaseViewModel createBaseViewModel(String title, int id, String clientName, String clientPhotoUrl) {
-        return new BaseViewModel(title, id, clientName, clientPhotoUrl);
+    public BaseViewModel createBaseViewModel(String title, UserDetails userDetails) {
+        if (userDetails == null){
+            return new BaseViewModel(title, -1, null, null);
+        }
+        else{
+            UserDetailsServiceImpl.CustomUser customUser = (UserDetailsServiceImpl.CustomUser) userDetails;
+            return new BaseViewModel(title, customUser.getId(), customUser.getName(), customUser.getPhotoUrl());
+        }
     }
 
 }

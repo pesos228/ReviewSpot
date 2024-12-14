@@ -8,8 +8,10 @@ import com.webServer.ReviewSpot.exceptions.ClientNotFoundException;
 import com.webServer.ReviewSpot.exceptions.CommentNotFoundException;
 import com.webServer.ReviewSpot.exceptions.MediaNotFoundException;
 import com.webServer.ReviewSpot.service.CommentService;
+import com.webServer.ReviewSpot.service.impl.UserDetailsServiceImpl;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -61,7 +63,13 @@ public class CommentControllerImpl implements CommentController {
     }
 
     @Override
-    public BaseViewModel createBaseViewModel(String title, int id, String clientName, String clientPhotoUrl) {
-        return new BaseViewModel(title, id, clientName, clientPhotoUrl);
+    public BaseViewModel createBaseViewModel(String title, UserDetails userDetails) {
+        if (userDetails == null){
+            return new BaseViewModel(title, -1, null, null);
+        }
+        else{
+            UserDetailsServiceImpl.CustomUser customUser = (UserDetailsServiceImpl.CustomUser) userDetails;
+            return new BaseViewModel(title, customUser.getId(), customUser.getName(), customUser.getPhotoUrl());
+        }
     }
 }

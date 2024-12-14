@@ -9,6 +9,7 @@ import jakarta.persistence.NoResultException;
 import jakarta.persistence.PersistenceContext;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
@@ -139,6 +140,19 @@ public class ReviewRepositoryImpl implements ReviewRepository {
         } catch (NoResultException e) {
             return null;
         }
+    }
+
+    @Override
+    public Page<Review> findAll(PageRequest pageable) {
+        Long reviewCount;
+        reviewCount = entityManager.createQuery("SELECT COUNT(r) FROM Review r", Long.class)
+                .getSingleResult();
+        var reviews = entityManager.createQuery("SELECT r FROM Review r", Review.class)
+                .setFirstResult((int) pageable.getOffset())
+                .setMaxResults(pageable.getPageSize())
+                .getResultList();
+
+        return new PageImpl<>(reviews, pageable, reviewCount);
     }
 
 }

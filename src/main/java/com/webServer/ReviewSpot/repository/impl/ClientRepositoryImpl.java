@@ -30,7 +30,7 @@ public class ClientRepositoryImpl implements ClientRepository {
     @Override
     public Client findByEmail(String email) {
         try {
-            return entityManager.createQuery("SELECT c FROM Client c WHERE c.email = :email", Client.class)
+            return entityManager.createQuery("SELECT c FROM Client c WHERE LOWER(c.email) = LOWER(:email)", Client.class)
                     .setParameter("email", email)
                     .getSingleResult();
         }catch (NoResultException e){

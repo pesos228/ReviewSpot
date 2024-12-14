@@ -1,6 +1,7 @@
 package com.webServer.ReviewSpot.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 
 import java.util.List;
 
@@ -14,10 +15,11 @@ public class Client extends BaseEntity{
     private List<Comment> comments;
     private List<Review> reviews;
     private List<Reaction> reactions;
+    private Role role;
 
     protected Client(){}
 
-    public Client(String name, String email, String password, String photoUrl, List<Comment> comments, List<Review> reviews, List<Reaction> reactions) {
+    public Client(String name, String email, String password, String photoUrl, List<Comment> comments, List<Review> reviews, List<Reaction> reactions, Role role) {
         this.name = name;
         this.email = email;
         this.password = password;
@@ -25,6 +27,7 @@ public class Client extends BaseEntity{
         this.comments = comments;
         this.reviews = reviews;
         this.reactions = reactions;
+        this.role = role;
     }
 
     @Column(name = "name", nullable = false)
@@ -88,5 +91,15 @@ public class Client extends BaseEntity{
 
     public void setReactions(List<Reaction> reactions) {
         this.reactions = reactions;
+    }
+
+    @ManyToOne
+    @JoinColumn(name = "role_id", nullable = false)
+    public Role getRole() {
+        return role;
+    }
+
+    public void setRole(Role role) {
+        this.role = role;
     }
 }

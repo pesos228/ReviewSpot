@@ -2,8 +2,10 @@ package com.webServer.ReviewSpot.cfg;
 
 import com.github.javafaker.Faker;
 import com.webServer.ReviewSpot.entity.*;
+import com.webServer.ReviewSpot.enums.ClientRoles;
 import com.webServer.ReviewSpot.repository.*;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,20 +23,30 @@ public class Clr implements CommandLineRunner {
     private final CommentRepository commentRepository;
     private final ReviewRepository reviewRepository;
     private final ReactionRepository reactionRepository;
+    private final RoleRepository roleRepository;
+    private final PasswordEncoder passwordEncoder;
 
     public Clr(ClientRepository clientRepository, MediaRepository mediaRepository,
                GenreRepository genreRepository, CommentRepository commentRepository,
-               ReviewRepository reviewRepository, ReactionRepository reactionRepository) {
+               ReviewRepository reviewRepository, ReactionRepository reactionRepository, RoleRepository roleRepository, PasswordEncoder passwordEncoder) {
         this.clientRepository = clientRepository;
         this.mediaRepository = mediaRepository;
         this.genreRepository = genreRepository;
         this.commentRepository = commentRepository;
         this.reviewRepository = reviewRepository;
         this.reactionRepository = reactionRepository;
+        this.roleRepository = roleRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Override
     public void run(String... args) throws Exception {
+
+        var clientRole = new Role(ClientRoles.CLIENT);
+        var adminRole = new Role(ClientRoles.ADMIN);
+        roleRepository.save(clientRole);
+        roleRepository.save(adminRole);
+
         String notFound = "https://juststickers.in/wp-content/uploads/2016/12/404-error-not-found-badge.png";
         Faker faker = new Faker();
 
@@ -76,22 +88,24 @@ public class Clr implements CommandLineRunner {
         Client client = new Client(
                 "John Doe",
                 "john@example.com",
-                "password123",
+                passwordEncoder.encode("password123"),
                 "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTP4xlp7Az9BofS3TO91z_EaeLvHusgeBqt_A&s",
                 new ArrayList<>(),
                 new ArrayList<>(),
-                new ArrayList<>()
+                new ArrayList<>(),
+                clientRole
         );
         clientRepository.save(client);
 
         Client client2 = new Client(
                 "Testik",
                 "vladick@gmail.com",
-                "password123",
+                passwordEncoder.encode("password123"),
                 "https://png.pngtree.com/png-vector/20240123/ourlarge/pngtree-cute-little-orange-cat-cute-kitty-png-image_11459046.png",
                 new ArrayList<>(),
                 new ArrayList<>(),
-                new ArrayList<>()
+                new ArrayList<>(),
+                adminRole
         );
         clientRepository.save(client2);
 
@@ -122,7 +136,6 @@ public class Clr implements CommandLineRunner {
                 "One of the best movies ever!"
         );
         reviewRepository.save(review);
-        System.out.println("Review ID: " + review.getId());
 
         Reaction reaction = new Reaction(
                 client,
@@ -145,11 +158,12 @@ public class Clr implements CommandLineRunner {
             Client newClient = new Client(
                     faker.name().fullName(),
                     email,
-                    faker.internet().password(8, 20),
+                    passwordEncoder.encode(faker.internet().password(8, 20)),
                     notFound,
                     new ArrayList<>(),
                     new ArrayList<>(),
-                    new ArrayList<>()
+                    new ArrayList<>(),
+                    clientRole
             );
             clientRepository.save(newClient);
         }

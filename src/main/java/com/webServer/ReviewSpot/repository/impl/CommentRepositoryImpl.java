@@ -8,6 +8,7 @@ import jakarta.persistence.PersistenceContext;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
@@ -123,6 +124,24 @@ public class CommentRepositoryImpl implements CommentRepository {
 
         var comments = entityManager.createQuery("SELECT c FROM Comment c JOIN c.client cl WHERE cl.id = :id", Comment.class)
                 .setParameter("id", id)
+                .setFirstResult((int) pageable.getOffset())
+                .setMaxResults(pageable.getPageSize())
+                .getResultList();
+
+        return new PageImpl<>(comments, pageable, commentCount);
+    }
+
+    @Override
+    public Page<Comment> findAll(Pageable pageable) {
+        Long commentCount;
+        try {
+            commentCount = entityManager.createQuery("SELECT COUNT(c) FROM Comment c", Long.class)
+                    .getSingleResult();
+        }catch (NoResultException e){
+            return new PageImpl<>(Collections.emptyList(), pageable, 0);
+        }
+
+        var comments = entityManager.createQuery("SELECT c FROM Comment c ORDER BY c.dateTime DESC", Comment.class)
                 .setFirstResult((int) pageable.getOffset())
                 .setMaxResults(pageable.getPageSize())
                 .getResultList();

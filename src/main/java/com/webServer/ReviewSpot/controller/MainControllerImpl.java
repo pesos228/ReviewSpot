@@ -9,11 +9,15 @@ import com.webServer.ReviewSpot.dto.ClientInfoDto;
 import com.webServer.ReviewSpot.dto.MediaOutputDto;
 import com.webServer.ReviewSpot.service.ClientService;
 import com.webServer.ReviewSpot.service.MediaService;
+import com.webServer.ReviewSpot.service.impl.UserDetailsServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 
+import java.security.Principal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -31,14 +35,9 @@ public class MainControllerImpl implements MainController {
 
     @Override
     @GetMapping
-    public String mainPage(Model model) {
-        var baseView = createBaseViewModel("Main", 2,"Testik", "https://png.pngtree.com/png-vector/20240123/ourlarge/pngtree-cute-little-orange-cat-cute-kitty-png-image_11459046.png");
+    public String mainPage(Model model, @AuthenticationPrincipal UserDetails userDetails) {
+        var baseView = createBaseViewModel("Main", userDetails);
         var clientListDto = clientService.getMostActiveClients(5);
-        for (ClientInfoDto client: clientListDto){
-            System.out.println(client.getId());
-            var ww = clientService.findById(client.getId());
-            System.out.println(ww.getName());
-        }
         var mediaListDto = mediaService.getMostPopularMediaByLastWeek(5);
 
         List<ClientCardViewModel> clientTop = new ArrayList<>();
@@ -58,7 +57,12 @@ public class MainControllerImpl implements MainController {
     }
 
     @Override
-    public BaseViewModel createBaseViewModel(String title, int id, String clientName, String clientPhotoUrl) {
-        return new BaseViewModel(title, id, clientName, clientPhotoUrl);
+    public BaseViewModel createBaseViewModel(String title, UserDetails userDetails) {
+        if (userDetails == null){
+            return new BaseViewModel(title, -1, null, null);
+        }else{
+            UserDetailsServiceImpl.CustomUser customUser = (UserDetailsServiceImpl.CustomUser) userDetails;
+            return new BaseViewModel(title, customUser.getId(), customUser.getName(), customUser.getPhotoUrl());
+        }
     }
 }

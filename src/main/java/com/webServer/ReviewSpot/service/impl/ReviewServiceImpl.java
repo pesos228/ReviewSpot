@@ -4,7 +4,6 @@ import com.webServer.ReviewSpot.dto.ReviewInputDto;
 import com.webServer.ReviewSpot.dto.ReviewOutputDto;
 import com.webServer.ReviewSpot.entity.Client;
 import com.webServer.ReviewSpot.entity.Media;
-import com.webServer.ReviewSpot.entity.Reaction;
 import com.webServer.ReviewSpot.entity.Review;
 import com.webServer.ReviewSpot.exceptions.ClientAlreadyHaveReviewException;
 import com.webServer.ReviewSpot.exceptions.ClientNotFoundException;
@@ -25,7 +24,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 @Service
@@ -182,6 +180,14 @@ public class ReviewServiceImpl implements ReviewService {
             throw new ReviewNotFoundException("Client with id: " + clientId + " doesnt have a review with id: " + mediaId);
         }
         return modelMapper.map(review, ReviewOutputDto.class);
+    }
+
+    @Override
+    public Page<ReviewOutputDto> findAll(int page, int size) {
+        var pageable = PageRequest.of(page -1, size);
+        return reviewRepository.findAll(pageable).map(
+                review -> modelMapper.map(review, ReviewOutputDto.class)
+        );
     }
 
 }

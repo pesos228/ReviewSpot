@@ -7,16 +7,22 @@
 </head>
 <body class="text-bg-dark">
 <header>
-    <nav class="navbar bg-body-dark">
-        <a href="/" class="navbar-brand fs-2 text-white h1 mx-2">Review Spot</a>
-        <ul class="nav justify-content-end ">
-            <li class="nav-item">
-                <img th:src="${model.clientPhotoUrl}" alt="clientPhoto" width="48" height="48" class="rounded-circle">
-            </li>
-            <li class="nav-item">
-                <a class="nav-link text-white" th:text="${model.clientName}" th:href="@{/client/{id}(id=${model.clientId})}">Link</a>
-            </li>
-        </ul>
+    <nav class="navbar navbar-dark bg-dark">
+        <div class="container-fluid">
+            <a href="/" class="navbar-brand fs-2 text-white">Review Spot</a>
+            <div class="d-flex align-items-center ms-auto">
+                <div th:if="${model.clientId != -1}" class="d-flex align-items-center">
+                    <form th:method="post" th:action="@{/auth/logout}">
+                        <input class="nav-link text-white me-5" type="submit" value="Logout">
+                    </form>
+                    <img th:src="${model.clientPhotoUrl}" alt="clientPhoto" width="48" height="48" class="rounded-circle me-3">
+                    <a class="nav-link text-white me-3" th:text="${model.clientName}" th:href="@{/client/{id}(id=${model.clientId})}">Link</a>
+                </div>
+                <div th:if="${model.clientId == -1}">
+                    <a class="nav-link text-white" th:href="@{/auth/login}">Login</a>
+                </div>
+            </div>
+        </div>
     </nav>
 </header>
 

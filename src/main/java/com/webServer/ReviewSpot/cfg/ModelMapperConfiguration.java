@@ -105,7 +105,7 @@ public class ModelMapperConfiguration {
                 List<ReviewOutputDto> reviews = reviewRepository.findByClientId(client.getId()).stream().map(
                         review -> modelMapper.map(review, ReviewOutputDto.class)).toList();
 
-                return new ClientInfoDto(client.getId(), client.getName(), client.getPhotoUrl(), comments, reviews);
+                return new ClientInfoDto(client.getId(), client.getName(), client.getRole().getName().getRoleName(),client.getPhotoUrl(), comments, reviews);
             }
         };
 

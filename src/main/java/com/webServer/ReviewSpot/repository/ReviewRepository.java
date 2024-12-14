@@ -1,7 +1,9 @@
 package com.webServer.ReviewSpot.repository;
 
+import com.webServer.ReviewSpot.dto.ReviewOutputDto;
 import com.webServer.ReviewSpot.entity.Review;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
 import java.time.LocalDateTime;
@@ -19,4 +21,5 @@ public interface ReviewRepository {
     Page<Review> getReviewsByMediaId(int id, Pageable pageable);
     Page<Review> getReviewsByClientId(int id, Pageable pageable);
     Review findByClientIdMediaId(int clientId, int mediaId);
+    Page<Review> findAll(PageRequest pageable);
 }

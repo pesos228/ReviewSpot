@@ -10,14 +10,20 @@ import com.reviewSpot.models.viewmodel.form.media.MediaFormModel;
 import com.webServer.ReviewSpot.dto.ClientInfoDto;
 import com.webServer.ReviewSpot.dto.GenreOutputDto;
 import com.webServer.ReviewSpot.dto.MediaOutputDto;
+import com.webServer.ReviewSpot.enums.ClientRoles;
 import com.webServer.ReviewSpot.exceptions.ClientNotFoundException;
 import com.webServer.ReviewSpot.exceptions.GenreNotFoundException;
 import com.webServer.ReviewSpot.exceptions.MediaNotFoundException;
+import com.webServer.ReviewSpot.exceptions.RoleNotFoundException;
+import com.webServer.ReviewSpot.repository.RoleRepository;
 import com.webServer.ReviewSpot.service.ClientService;
 import com.webServer.ReviewSpot.service.GenreService;
 import com.webServer.ReviewSpot.service.MediaService;
+import com.webServer.ReviewSpot.service.impl.UserDetailsServiceImpl;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -31,17 +37,19 @@ public class AdminControllerEditImpl implements AdminControllerEdit {
     private final ClientService clientService;
     private final GenreService genreService;
     private final MediaService mediaService;
+    private final RoleRepository roleRepository;
 
     @Autowired
-    public AdminControllerEditImpl(ClientService clientService, GenreService genreService, MediaService mediaService) {
+    public AdminControllerEditImpl(ClientService clientService, GenreService genreService, MediaService mediaService, RoleRepository roleRepository) {
         this.clientService = clientService;
         this.genreService = genreService;
         this.mediaService = mediaService;
+        this.roleRepository = roleRepository;
     }
 
     @Override
     @GetMapping("/{id}/client")
-    public String editClient(@PathVariable int id, Model model, RedirectAttributes redirectAttributes) {
+    public String editClient(@PathVariable int id, Model model, RedirectAttributes redirectAttributes, @AuthenticationPrincipal UserDetails userDetails) {
         ClientInfoDto client;
         try {
             client = clientService.findById(id);
@@ -50,16 +58,17 @@ public class AdminControllerEditImpl implements AdminControllerEdit {
             return "redirect:/admin";
         }
 
-        var viewModel = new AdminViewModelEntityEdit(createBaseViewModel("Client edit page", 1, null, null), "client", id);
+        var viewModel = new AdminViewModelEntityEdit(createBaseViewModel("Client edit page", userDetails), "client", id);
 
         model.addAttribute("model", viewModel);
-        model.addAttribute("clientForm",new ClientEditForm(client.getName(), client.getPhotoUrl()));
+        model.addAttribute("clientForm",new ClientEditForm(client.getName(), client.getPhotoUrl(), client.getRole()));
+        model.addAttribute("roles", roleRepository.findAll());
         return "admin-edit";
     }
 
     @Override
     @GetMapping("/{id}/genre")
-    public String editGenre(@PathVariable int id, Model model, RedirectAttributes redirectAttributes) {
+    public String editGenre(@PathVariable int id, Model model, RedirectAttributes redirectAttributes, @AuthenticationPrincipal UserDetails userDetails) {
         GenreOutputDto genre;
         try {
             genre = genreService.findById(id);
@@ -68,7 +77,7 @@ public class AdminControllerEditImpl implements AdminControllerEdit {
             return "redirect:/admin";
         }
 
-        var viewModel = new AdminViewModelEntityEdit(createBaseViewModel("Genre edit page", 1, null, null),
+        var viewModel = new AdminViewModelEntityEdit(createBaseViewModel("Genre edit page", userDetails),
                 "genre", id);
 
         model.addAttribute("model", viewModel);
@@ -78,7 +87,7 @@ public class AdminControllerEditImpl implements AdminControllerEdit {
 
     @Override
     @GetMapping("/{id}/media")
-    public String editMedia(@PathVariable int id, Model model, RedirectAttributes redirectAttributes) {
+    public String editMedia(@PathVariable int id, Model model, RedirectAttributes redirectAttributes, @AuthenticationPrincipal UserDetails userDetails) {
         MediaOutputDto media;
         try {
             media = mediaService.findById(id);
@@ -87,7 +96,7 @@ public class AdminControllerEditImpl implements AdminControllerEdit {
             return "redirect:/admin";
         }
 
-        var viewModel = new AdminViewModelEntityEdit(createBaseViewModel("Media edit page", 1, null, null),
+        var viewModel = new AdminViewModelEntityEdit(createBaseViewModel("Media edit page", userDetails),
                 "media", id);
 
         model.addAttribute("model", viewModel);
@@ -101,16 +110,14 @@ public class AdminControllerEditImpl implements AdminControllerEdit {
     @PostMapping("/{id}/client")
     public String createClient(@PathVariable int id, @Valid @ModelAttribute("clientForm") ClientEditForm clientEditForm,
                                BindingResult bindingResult, RedirectAttributes redirectAttributes) {
-        System.out.println(clientEditForm.name());
-        System.out.println(clientEditForm.photoUrl());
         if (bindingResult.hasErrors()){
             redirectAttributes.addFlashAttribute("error", "Error in filling out the form");
             redirectAttributes.addFlashAttribute("form", clientEditForm);
             return "redirect:/admin/edit/" + id + "/client";
         }
         try {
-            clientService.update(id,clientEditForm.name(), clientEditForm.photoUrl());
-        }catch (ClientNotFoundException e){
+            clientService.update(id,clientEditForm.name(), clientEditForm.photoUrl(), ClientRoles.valueOf(clientEditForm.role()));
+        }catch (ClientNotFoundException | RoleNotFoundException e){
             redirectAttributes.addFlashAttribute("error", e.getMessage());
             return "redirect:/admin/edit/" + id + "/client";
         }
@@ -160,7 +167,13 @@ public class AdminControllerEditImpl implements AdminControllerEdit {
     }
 
     @Override
-    public BaseViewModel createBaseViewModel(String title, int id, String clientName, String clientPhotoUrl) {
-        return new BaseViewModel(title, id, clientName, clientPhotoUrl);
+    public BaseViewModel createBaseViewModel(String title, UserDetails userDetails) {
+        if (userDetails == null){
+            return new BaseViewModel(title, -1, null, null);
+        }
+        else{
+            UserDetailsServiceImpl.CustomUser customUser = (UserDetailsServiceImpl.CustomUser) userDetails;
+            return new BaseViewModel(title, customUser.getId(), customUser.getName(), customUser.getPhotoUrl());
+        }
     }
 }
