@@ -1,9 +1,8 @@
 package com.webServer.ReviewSpot.dto;
 
-
 import java.time.LocalDateTime;
 
-public class CommentOutputDto extends CommentInputDto{
+public class CommentOutputDto extends CommentInputDto {
     private int id;
     private String clientName;
     private String clientPhotoUrl;

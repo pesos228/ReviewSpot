@@ -5,10 +5,7 @@ import com.webServer.ReviewSpot.dto.ReviewOutputDto;
 import com.webServer.ReviewSpot.entity.Client;
 import com.webServer.ReviewSpot.entity.Media;
 import com.webServer.ReviewSpot.entity.Review;
-import com.webServer.ReviewSpot.exceptions.ClientAlreadyHaveReviewException;
-import com.webServer.ReviewSpot.exceptions.ClientNotFoundException;
-import com.webServer.ReviewSpot.exceptions.MediaNotFoundException;
-import com.webServer.ReviewSpot.exceptions.ReviewNotFoundException;
+import com.webServer.ReviewSpot.exceptions.*;
 import com.webServer.ReviewSpot.repository.ClientRepository;
 import com.webServer.ReviewSpot.repository.MediaRepository;
 import com.webServer.ReviewSpot.repository.ReactionRepository;
@@ -16,6 +13,10 @@ import com.webServer.ReviewSpot.repository.ReviewRepository;
 import com.webServer.ReviewSpot.service.ReviewService;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.CacheManager;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Caching;
+import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -27,6 +28,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Service
+@EnableCaching
 public class ReviewServiceImpl implements ReviewService {
 
     private final ReviewRepository reviewRepository;
@@ -34,18 +36,24 @@ public class ReviewServiceImpl implements ReviewService {
     private final MediaRepository mediaRepository;
     private final ReactionRepository reactionRepository;
     private final ModelMapper modelMapper;
+    private final CacheManager cacheManager;
 
     @Autowired
-    public ReviewServiceImpl(ReviewRepository reviewRepository, ClientRepository clientRepository, MediaRepository mediaRepository, ReactionRepository reactionRepository, ModelMapper modelMapper) {
+    public ReviewServiceImpl(ReviewRepository reviewRepository, ClientRepository clientRepository, MediaRepository mediaRepository, ReactionRepository reactionRepository, ModelMapper modelMapper, CacheManager cacheManager) {
         this.reviewRepository = reviewRepository;
         this.clientRepository = clientRepository;
         this.mediaRepository = mediaRepository;
         this.reactionRepository = reactionRepository;
         this.modelMapper = modelMapper;
+        this.cacheManager = cacheManager;
     }
 
     @Override
     @Transactional
+    @Caching(evict = {
+            @CacheEvict(value = "CLIENT_PAGE", key = "#reviewInputDto.getClientId()"),
+            @CacheEvict(value = "MEDIA_PAGE", key = "#reviewInputDto.getMediaId()")
+    })
     public void save(ReviewInputDto reviewInputDto) {
         Client client = clientRepository.findById(reviewInputDto.getClientId());
         if (client == null){
@@ -85,14 +93,20 @@ public class ReviewServiceImpl implements ReviewService {
 
     @Override
     @Transactional
-    public void deleteById(int id) {
-        Review review = reviewRepository.findById(id);
+    public void deleteById(int reviewId) {
+        Review review = reviewRepository.findById(reviewId);
         if (review == null){
-            throw new ReviewNotFoundException("Review with id: " + id + " not found");
+            throw new ReviewNotFoundException("Review with id: " + reviewId + " not found");
         }
 
         Media media = review.getMedia();
-        reviewRepository.deleteById(id);
+        reviewRepository.deleteById(reviewId);
+
+        var mediaCache = cacheManager.getCache("MEDIA_PAGE");
+        if (mediaCache != null) {mediaCache.evict(media.getId());}
+
+        var clientCache = cacheManager.getCache("CLIENT_PAGE");
+        if (clientCache != null){ clientCache.evict(review.getClient().getId());}
 
         List<Review> reviews = reviewRepository.findByMediaId(media.getId());
         List<Integer> ratings = new ArrayList<>();
@@ -188,6 +202,18 @@ public class ReviewServiceImpl implements ReviewService {
         return reviewRepository.findAll(pageable).map(
                 review -> modelMapper.map(review, ReviewOutputDto.class)
         );
+    }
+
+    @Override
+    public boolean hasDeletePermission(int reviewId, int clientId) {
+        var review = reviewRepository.findById(reviewId);
+        if (review == null) {
+            throw new ReviewNotFoundException("Review with id: " + reviewId + " not found");
+        }
+        if (review.getClient().getRole().getName().getRoleName().equals("ADMIN")) {
+            return true;
+        }
+        return review.getClient().getId() == clientId;
     }
 
 }

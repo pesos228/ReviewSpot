@@ -10,7 +10,7 @@ import java.util.List;
 public interface ReviewService {
     void save(ReviewInputDto reviewInputDto);
     ReviewOutputDto findById(int id);
-    void deleteById(int id);
+    void deleteById(int reviewId);
     List<ReviewOutputDto> findByMediaId(int id);
     List<ReviewOutputDto> findByClientId(int id);
     List<ReviewOutputDto> findByClientIdAfterDate(int id, LocalDateTime date);
@@ -20,4 +20,5 @@ public interface ReviewService {
     Page<ReviewOutputDto> getReviewsByClientId(int id, int reviewPage, int reviewSize);
     ReviewOutputDto findByClientIdMediaId(int clientId, int mediaId);
     Page<ReviewOutputDto> findAll(int page, int size);
+    boolean hasDeletePermission(int reviewId, int clientId);
 }

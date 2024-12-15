@@ -16,6 +16,7 @@ public interface CommentService {
     List<CommentOutputDto> getLastCommentsByClientId(int id, int count);
     Page<CommentOutputDto> getLastCommentsByClientId(int id,  int page, int size);
     Page<CommentOutputDto> getLastCommentsByMediaId(int id, int page, int size);
-    void deleteById(int id);
+    void deleteById(int commentId);
     Page<CommentOutputDto> findAll(int page, int size);
+    boolean hasDeletePermission(int commentId, int clientId);
 }

@@ -6,11 +6,11 @@ import com.reviewSpot.models.viewmodel.form.client.ClientFormModel;
 import com.reviewSpot.models.viewmodel.form.client.ClientLoginFormModel;
 import com.webServer.ReviewSpot.dto.ClientInputDto;
 import com.webServer.ReviewSpot.exceptions.ClientEmailAlreadyExistsException;
-import com.webServer.ReviewSpot.exceptions.ClientNotFoundException;
 import com.webServer.ReviewSpot.service.ClientService;
 import com.webServer.ReviewSpot.service.impl.UserDetailsServiceImpl;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -31,8 +31,11 @@ public class AuthControllerImpl implements AuthController {
 
     @Override
     @GetMapping("/login")
-    public String pageLogin(@RequestParam(value = "error", required = false) String error, Model model) {
-        var baseView = createBaseViewModel("Authorization",null);
+    public String pageLogin(@RequestParam(value = "error", required = false) String error, Model model, @AuthenticationPrincipal UserDetails userDetails) {
+        var baseView = createBaseViewModel("Authorization",userDetails);
+        if (baseView.clientId() != -1){
+            return "redirect:/";
+        }
         model.addAttribute("model", baseView);
         if (error != null) {
             model.addAttribute("error", "Неверный логин или пароль");

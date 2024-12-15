@@ -13,6 +13,9 @@ import com.webServer.ReviewSpot.service.MediaService;
 import com.webServer.ReviewSpot.service.ReviewService;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -26,6 +29,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
+@EnableCaching
 public class MediaServiceImpl implements MediaService {
 
     private final MediaRepository mediaRepository;
@@ -93,6 +97,7 @@ public class MediaServiceImpl implements MediaService {
     }
 
     @Override
+    @Cacheable(value = "MEDIA_PAGE", key = "#id")
     public MediaOutputDto findById(int id) {
         Media media = mediaRepository.findById(id);
         if (media == null){
@@ -112,6 +117,7 @@ public class MediaServiceImpl implements MediaService {
     }
 
     @Override
+    @Cacheable("MEDIA_TOP")
     public List<MediaOutputDto> getMostPopularMediaByLastWeek(int count) {
         var lastWeek = LocalDateTime.now().minusDays(7);
         return mediaRepository.findAll().stream().map(
@@ -172,6 +178,7 @@ public class MediaServiceImpl implements MediaService {
 
     @Override
     @Transactional
+    @CacheEvict(value = "MEDIA_PAGE", key = "#id")
     public void update(int id, String name, String photoUrl, String description, List<String> genre) {
         var media = mediaRepository.findById(id);
         if (media == null){
@@ -196,6 +203,7 @@ public class MediaServiceImpl implements MediaService {
 
     @Override
     @Transactional
+    @CacheEvict(value = "MEDIA_PAGE", key = "#id")
     public void deleteById(int id) {
         var media = mediaRepository.findById(id);
         if (media == null){

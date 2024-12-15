@@ -11,6 +11,7 @@ import com.webServer.ReviewSpot.service.CommentService;
 import com.webServer.ReviewSpot.service.impl.UserDetailsServiceImpl;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindingResult;
@@ -33,7 +34,7 @@ public class CommentControllerImpl implements CommentController {
 
     @Override
     @PostMapping
-    public String createComment(@Valid @ModelAttribute("commentForm")CommentFormModel commentFormModel, BindingResult bindingResult, RedirectAttributes redirectAttributes) {
+    public String createComment(@Valid @ModelAttribute("commentForm")CommentFormModel commentFormModel, BindingResult bindingResult, RedirectAttributes redirectAttributes, @AuthenticationPrincipal UserDetails userDetails) {
 
         if (bindingResult.hasErrors()){
             redirectAttributes.addFlashAttribute("error", "Error in filling out the form");
@@ -41,7 +42,8 @@ public class CommentControllerImpl implements CommentController {
         }
 
         try {
-            commentService.save(new CommentInputDto(commentFormModel.clientId(), commentFormModel.mediaId(), commentFormModel.text()));
+            var clientId = ((UserDetailsServiceImpl.CustomUser) userDetails).getId();
+            commentService.save(new CommentInputDto(clientId, commentFormModel.mediaId(), commentFormModel.text()));
             return "redirect:" + commentFormModel.currentUrl();
         }catch (ClientNotFoundException | MediaNotFoundException e){
             redirectAttributes.addFlashAttribute("error", e.getMessage());
@@ -52,8 +54,15 @@ public class CommentControllerImpl implements CommentController {
 
     @Override
     @PostMapping("/delete")
-    public String deleteComment(@RequestParam("commentId") int commentId, @RequestParam("currentUrl") String currentUrl, RedirectAttributes redirectAttributes) {
+    public String deleteComment(@RequestParam("commentId") int commentId, @RequestParam("currentUrl") String currentUrl, RedirectAttributes redirectAttributes, @AuthenticationPrincipal UserDetails userDetails) {
         try {
+
+            var clientId = ((UserDetailsServiceImpl.CustomUser) userDetails).getId();
+            if (!commentService.hasDeletePermission(commentId, clientId)){
+                redirectAttributes.addFlashAttribute("error", "You do not have permission to delete this comment.");
+                return "redirect:" + currentUrl;
+            }
+
             commentService.deleteById(commentId);
             return "redirect:" + currentUrl;
         }catch (CommentNotFoundException e){

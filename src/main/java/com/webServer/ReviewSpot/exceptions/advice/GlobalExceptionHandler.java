@@ -74,4 +74,5 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(RoleNotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
     String roleNotFoundException(RoleNotFoundException e){ return e.getMessage();}
+
 }

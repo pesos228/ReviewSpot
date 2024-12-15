@@ -9,7 +9,7 @@ import com.webServer.ReviewSpot.service.ReactionService;
 import com.webServer.ReviewSpot.service.impl.UserDetailsServiceImpl;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindingResult;
@@ -29,11 +29,12 @@ public class ReactionControllerImpl implements ReactionController {
 
     @Override
     @PostMapping
-    public String createReaction(@Valid @ModelAttribute("reaction") ReactionFormModel reactionFormModel, BindingResult bindingResult, RedirectAttributes redirectAttributes) {
+    public String createReaction(@Valid @ModelAttribute("reaction") ReactionFormModel reactionFormModel, BindingResult bindingResult, RedirectAttributes redirectAttributes, @AuthenticationPrincipal UserDetails userDetails) {
         if (!bindingResult.hasErrors()){
             try {
+                var clientId = ((UserDetailsServiceImpl.CustomUser) userDetails).getId();
                 if(reactionFormModel.targetType().equalsIgnoreCase("COMMENT") || reactionFormModel.targetType().equalsIgnoreCase("REVIEW")){
-                    reactionService.save(new ReactionInputDto(reactionFormModel.clientId(),
+                    reactionService.save(new ReactionInputDto(clientId,
                             reactionFormModel.targetId(), reactionFormModel.targetType(), reactionFormModel.like()));
                     return "redirect:" + reactionFormModel.currentUrl();
                 }
@@ -48,15 +49,16 @@ public class ReactionControllerImpl implements ReactionController {
 
     @Override
     @PostMapping("/delete")
-    public String deleteReaction(@Valid @ModelAttribute("reaction") ReactionFormModel reactionFormModel, BindingResult bindingResult, RedirectAttributes redirectAttributes) {
+    public String deleteReaction(@Valid @ModelAttribute("reaction") ReactionFormModel reactionFormModel, BindingResult bindingResult, RedirectAttributes redirectAttributes, @AuthenticationPrincipal UserDetails userDetails) {
         if (!bindingResult.hasErrors()){
             try {
+                var clientId = ((UserDetailsServiceImpl.CustomUser) userDetails).getId();
 
                 if(reactionFormModel.targetType().equalsIgnoreCase("COMMENT")){
-                    reactionService.deleteByClientTargetAndType(reactionFormModel.clientId(), reactionFormModel.targetId(), "COMMENT");
+                    reactionService.deleteByClientTargetAndType(clientId, reactionFormModel.targetId(), "COMMENT");
                 }
                 if (reactionFormModel.targetType().equalsIgnoreCase("REVIEW")){
-                    reactionService.deleteByClientTargetAndType(reactionFormModel.clientId(), reactionFormModel.targetId(), "REVIEW");
+                    reactionService.deleteByClientTargetAndType(clientId, reactionFormModel.targetId(), "REVIEW");
                 }
 
                 return "redirect:" + reactionFormModel.currentUrl();

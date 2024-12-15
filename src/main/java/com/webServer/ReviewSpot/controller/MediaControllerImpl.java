@@ -76,6 +76,7 @@ public class MediaControllerImpl implements MediaController {
         return "media";
     }
 
+
     @Override
     public BaseViewModel createBaseViewModel(String title, UserDetails userDetails) {
         if (userDetails == null){

@@ -4,7 +4,6 @@ import com.reviewSpot.models.controllers.ReviewController;
 import com.reviewSpot.models.viewmodel.ReviewViewModel;
 import com.reviewSpot.models.viewmodel.card.BaseViewModel;
 import com.reviewSpot.models.viewmodel.form.review.ReviewFormModel;
-import com.reviewSpot.models.viewmodel.form.review.ReviewPageFormModel;
 import com.webServer.ReviewSpot.dto.ReviewInputDto;
 import com.webServer.ReviewSpot.exceptions.ClientAlreadyHaveReviewException;
 import com.webServer.ReviewSpot.exceptions.ClientNotFoundException;
@@ -56,7 +55,7 @@ public class ReviewControllerImpl implements ReviewController {
 
     @Override
     @PostMapping
-    public String createReview(@Valid @ModelAttribute("review")ReviewFormModel reviewFormModel, BindingResult bindingResult, RedirectAttributes redirectAttributes) {
+    public String createReview(@Valid @ModelAttribute("review")ReviewFormModel reviewFormModel, BindingResult bindingResult, RedirectAttributes redirectAttributes, @AuthenticationPrincipal UserDetails userDetails) {
 
         if (bindingResult.hasErrors()){
             redirectAttributes.addFlashAttribute("error", "Error in filling out the form");
@@ -64,7 +63,8 @@ public class ReviewControllerImpl implements ReviewController {
         }
 
         try {
-            reviewService.save(new ReviewInputDto(reviewFormModel.clientId(), reviewFormModel.mediaId(), reviewFormModel.rating(), reviewFormModel.watchStatus(), reviewFormModel.text()));
+            var clientId = ((UserDetailsServiceImpl.CustomUser) userDetails).getId();
+            reviewService.save(new ReviewInputDto(clientId, reviewFormModel.mediaId(), reviewFormModel.rating(), reviewFormModel.watchStatus(), reviewFormModel.text()));
             return "redirect:" + reviewFormModel.currentUrl();
         }catch (ClientNotFoundException | MediaNotFoundException | ClientAlreadyHaveReviewException e){
             redirectAttributes.addFlashAttribute("error", e.getMessage());
@@ -74,8 +74,15 @@ public class ReviewControllerImpl implements ReviewController {
 
     @Override
     @PostMapping("/delete")
-    public String deleteReview(@RequestParam("reviewId") int reviewId, @RequestParam("currentUrl") String currentUrl, RedirectAttributes redirectAttributes) {
+    public String deleteReview(@RequestParam("reviewId") int reviewId, @RequestParam("currentUrl") String currentUrl, RedirectAttributes redirectAttributes, @AuthenticationPrincipal UserDetails userDetails) {
         try {
+
+            var clientId = ((UserDetailsServiceImpl.CustomUser) userDetails).getId();
+            if (!reviewService.hasDeletePermission(reviewId, clientId)){
+                redirectAttributes.addFlashAttribute("error", "You do not have permission to delete this review.");
+                return "redirect:" + currentUrl;
+            }
+
             reviewService.deleteById(reviewId);
             return "redirect:" + currentUrl;
         }catch (ReviewNotFoundException e){

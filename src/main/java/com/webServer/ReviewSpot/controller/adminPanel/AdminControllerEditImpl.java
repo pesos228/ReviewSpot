@@ -4,7 +4,6 @@ import com.reviewSpot.models.controllers.adminPanel.AdminControllerEdit;
 import com.reviewSpot.models.viewmodel.AdminViewModelEntityEdit;
 import com.reviewSpot.models.viewmodel.card.BaseViewModel;
 import com.reviewSpot.models.viewmodel.form.client.ClientEditForm;
-import com.reviewSpot.models.viewmodel.form.client.ClientFormModel;
 import com.reviewSpot.models.viewmodel.form.genre.GenreFormModel;
 import com.reviewSpot.models.viewmodel.form.media.MediaFormModel;
 import com.webServer.ReviewSpot.dto.ClientInfoDto;

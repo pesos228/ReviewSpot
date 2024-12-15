@@ -111,7 +111,7 @@ public class Clr implements CommandLineRunner {
 
         Comment comment = new Comment(
                 client,
-                movies.getFirst(),
+                movies.get(0),
                 LocalDateTime.now(),
                 "Great movie!Great movie!Great movie!Great movie!Great movie!Great movie!Great movie!Great movie!Great movie!Great movie!Great movie!Great movie!Great movie!Great movie!Great movie!Great movie!Great movie!Great movie!Great movie!Great movie!Great movie!Great movie!Great movie!Great movie!Great movie!Great movie!"
         );
@@ -120,7 +120,7 @@ public class Clr implements CommandLineRunner {
         for (int i = 0; i < 20; i++) {
             Comment commentNew = new Comment(
                     client,
-                    movies.getFirst(),
+                    movies.get(0),
                     LocalDateTime.now(),
                     "Great movie!Great movie!Great movie!Great movie!Great movie!Great movie!Great movie!Great movie!Great movie!Great movie!Great movie!Great movie!Great movie!Great movie!Great movie!Great movie!Great movie!Great movie!Great movie!Great movie!Great movie!Great movie!Great movie!Great movie!Great movie!Great movie!"
             );
@@ -129,7 +129,7 @@ public class Clr implements CommandLineRunner {
 
         Review review = new Review(
                 client,
-                movies.getFirst(),
+                movies.get(0),
                 LocalDateTime.now(),
                 5,
                 "COMPLETED",
@@ -137,13 +137,6 @@ public class Clr implements CommandLineRunner {
         );
         reviewRepository.save(review);
 
-        Reaction reaction = new Reaction(
-                client,
-                comment,
-                true
-        );
-
-        reactionRepository.save(reaction);
 
 
         Set<String> usedEmails = new HashSet<>();

@@ -13,7 +13,6 @@ public interface ClientService {
     List<ClientOutputDto> findAll();
     ClientInfoDto findById(int id);
     void update(int id, String name, String photoUrl, ClientRoles role);
-    boolean authenticateClient(String email, String password);
     List<ClientInfoDto> getMostActiveClients(int count);
     Page<ClientInfoDto> findAll(int page, int size);
 }

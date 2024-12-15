@@ -1,7 +1,5 @@
 package com.webServer.ReviewSpot.repository.impl;
 
-import com.webServer.ReviewSpot.entity.Client;
-import com.webServer.ReviewSpot.entity.Media;
 import com.webServer.ReviewSpot.entity.Review;
 import com.webServer.ReviewSpot.repository.ReviewRepository;
 import jakarta.persistence.EntityManager;

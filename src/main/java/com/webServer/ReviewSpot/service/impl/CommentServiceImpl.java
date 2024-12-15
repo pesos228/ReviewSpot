@@ -2,13 +2,8 @@ package com.webServer.ReviewSpot.service.impl;
 
 import com.webServer.ReviewSpot.dto.CommentInputDto;
 import com.webServer.ReviewSpot.dto.CommentOutputDto;
-import com.webServer.ReviewSpot.entity.Client;
-import com.webServer.ReviewSpot.entity.Comment;
-import com.webServer.ReviewSpot.entity.Media;
-import com.webServer.ReviewSpot.entity.Reaction;
-import com.webServer.ReviewSpot.exceptions.ClientNotFoundException;
-import com.webServer.ReviewSpot.exceptions.CommentNotFoundException;
-import com.webServer.ReviewSpot.exceptions.MediaNotFoundException;
+import com.webServer.ReviewSpot.entity.*;
+import com.webServer.ReviewSpot.exceptions.*;
 import com.webServer.ReviewSpot.repository.ClientRepository;
 import com.webServer.ReviewSpot.repository.CommentRepository;
 import com.webServer.ReviewSpot.repository.MediaRepository;
@@ -16,19 +11,21 @@ import com.webServer.ReviewSpot.repository.ReactionRepository;
 import com.webServer.ReviewSpot.service.CommentService;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+import org.springframework.cache.CacheManager;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.EnableCaching;
+import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
+@EnableCaching
 public class CommentServiceImpl implements CommentService {
 
     private final CommentRepository commentRepository;
@@ -36,18 +33,21 @@ public class CommentServiceImpl implements CommentService {
     private final MediaRepository mediaRepository;
     private final ClientRepository clientRepository;
     private final ModelMapper modelMapper;
+    private final CacheManager cacheManager;
 
     @Autowired
-    public CommentServiceImpl(CommentRepository commentRepository, ReactionRepository reactionRepository, MediaRepository mediaRepository, ClientRepository clientRepository, ModelMapper modelMapper) {
+    public CommentServiceImpl(CommentRepository commentRepository, ReactionRepository reactionRepository, MediaRepository mediaRepository, ClientRepository clientRepository, ModelMapper modelMapper, CacheManager cacheManager) {
         this.commentRepository = commentRepository;
         this.reactionRepository = reactionRepository;
         this.mediaRepository = mediaRepository;
         this.clientRepository = clientRepository;
         this.modelMapper = modelMapper;
+        this.cacheManager = cacheManager;
     }
 
     @Override
     @Transactional
+    @CacheEvict(value = "CLIENT_PAGE", key = "#commentInputDto.getClientId()")
     public void save(CommentInputDto commentInputDto) {
         Client client = clientRepository.findById(commentInputDto.getClientId());
         if (client == null){
@@ -146,13 +146,19 @@ public class CommentServiceImpl implements CommentService {
 
     @Override
     @Transactional
-    public void deleteById(int id) {
-        var comment = commentRepository.findById(id);
+    public void deleteById(int commentId) {
+        var comment = commentRepository.findById(commentId);
+
         if (comment == null){
-            throw new CommentNotFoundException("Comment with id: " + id + " not found");
+            throw new CommentNotFoundException("Comment with id: " + commentId + " not found");
         }
 
-        commentRepository.deleteById(id);
+        var cache = cacheManager.getCache("CLIENT_PAGE");
+        if (cache != null){
+            cache.evict(comment.getClient().getId());
+        }
+
+        commentRepository.deleteById(commentId);
     }
 
     @Override
@@ -161,5 +167,17 @@ public class CommentServiceImpl implements CommentService {
         return commentRepository.findAll(pageable).map(
                 comment -> modelMapper.map(comment, CommentOutputDto.class)
         );
+    }
+
+    @Override
+    public boolean hasDeletePermission(int commentId, int clientId) {
+        var comment = commentRepository.findById(commentId);
+        if (comment == null) {
+            throw new CommentNotFoundException("Comment with id: " + commentId + " not found");
+        }
+        if (comment.getClient().getRole().getName().getRoleName().equals("ADMIN")) {
+            return true;
+        }
+        return comment.getClient().getId() == clientId;
     }
 }

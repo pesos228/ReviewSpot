@@ -1,5 +1,6 @@
 package com.webServer.ReviewSpot.service.impl;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.webServer.ReviewSpot.dto.ClientInfoDto;
 import com.webServer.ReviewSpot.dto.ClientInputDto;
 import com.webServer.ReviewSpot.dto.ClientOutputDto;
@@ -15,6 +16,9 @@ import com.webServer.ReviewSpot.service.CommentService;
 import com.webServer.ReviewSpot.service.ReviewService;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -27,6 +31,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
+@EnableCaching
 public class ClientServiceImpl implements ClientService {
 
     private final ClientRepository clientRepository;
@@ -68,10 +73,11 @@ public class ClientServiceImpl implements ClientService {
     }
 
     @Override
+    @Cacheable(value = "CLIENT_PAGE", key = "#id")
     public ClientInfoDto findById(int id) {
         Client client = clientRepository.findById(id);
         if (client == null){
-            throw  new ClientNotFoundException("Client with id: " + id + " not found2");
+            throw  new ClientNotFoundException("Client with id: " + id + " not found");
         }
         return modelMapper.map(client, ClientInfoDto.class);
 
@@ -79,6 +85,7 @@ public class ClientServiceImpl implements ClientService {
 
     @Override
     @Transactional
+    @CacheEvict(value = "CLIENT_PAGE", key = "#id")
     public void update(int id, String name, String photoUrl, ClientRoles role) {
         var client = clientRepository.findById(id);
         var roleEntity = roleRepository.findByName(role);
@@ -96,15 +103,7 @@ public class ClientServiceImpl implements ClientService {
     }
 
     @Override
-    public boolean authenticateClient(String email, String password) {
-        Client client = clientRepository.findByEmail(email);
-        if (client == null){
-            throw new ClientNotFoundException("Client with email: " + email + " not found");
-        }
-        return client.getEmail().equals(email) && client.getPassword().equals(password);
-    }
-
-    @Override
+    @Cacheable("CLIENT_TOP")
     public List<ClientInfoDto> getMostActiveClients(int count) {
         var lastWeek = LocalDateTime.now().minusDays(7);
         return clientRepository.findAll().stream().map(

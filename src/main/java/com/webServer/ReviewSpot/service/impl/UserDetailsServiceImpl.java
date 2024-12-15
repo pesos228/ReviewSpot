@@ -1,6 +1,5 @@
 package com.webServer.ReviewSpot.service.impl;
 
-import com.webServer.ReviewSpot.exceptions.ClientNotFoundException;
 import com.webServer.ReviewSpot.repository.ClientRepository;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
